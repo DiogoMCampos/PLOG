@@ -1,0 +1,9 @@
+board([[o, o, o, o, o, o, o, o, o],
+    [o, o, o, o, o, o, o, o, o],
+    [o, o, o, o, o, o, o, o, o],
+    [o, o, o, o, o, o, o, o, o],
+    [o, o, o, o, o, o, o, o, o],
+    [o, o, o, o, o, o, o, o, o],
+    [o, o, o, o, o, o, o, o, o],
+    [o, o, o, o, o, o, o, o, o],
+    [o, o, o, o, o, o, o, o, o]]).
