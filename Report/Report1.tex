@@ -1,0 +1,109 @@
+\documentclass[a4paper]{article}
+
+%use the english line for english reports
+%usepackage[english]{babel}
+\usepackage[portuguese]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{indentfirst}
+\usepackage{graphicx}
+\usepackage{verbatim}
+
+
+\begin{document}
+
+\setlength{\textwidth}{16cm}
+\setlength{\textheight}{22cm}
+
+\title{\Huge\textbf{Oshi}\linebreak\linebreak\linebreak
+\Large\textbf{Relatório Intercalar}\linebreak\linebreak
+\linebreak\linebreak
+\includegraphics[scale=0.1]{feup-logo.png}\linebreak\linebreak
+\linebreak\linebreak
+\Large{Mestrado Integrado em Engenharia Informática e Computação} \linebreak\linebreak
+\Large{Programação em Lógica}\linebreak
+}
+
+\author{\textbf{Grupo Oshi 2:}\\
+Diogo Campos - 201403468 \\
+William Fukunaga - 201405119 \\
+\linebreak\linebreak \\
+ \\ Faculdade de Engenharia da Universidade do Porto \\ Rua Roberto Frias, s\/n, 4200-465 Porto, Portugal \linebreak\linebreak\linebreak
+\linebreak\linebreak\vspace{1cm}}
+
+\maketitle
+\thispagestyle{empty}
+
+%************************************************************************************************
+%************************************************************************************************
+
+\newpage
+
+%Todas as figuras devem ser referidas no texto. %\ref{fig:codigoFigura}
+%
+%%Exemplo de código para inserção de figuras
+%%\begin{figure}[h!]
+%%\begin{center}
+%%escolher entre uma das seguintes três linhas:
+%%\includegraphics[height=20cm,width=15cm]{path relativo da imagem}
+%%\includegraphics[scale=0.5]{path relativo da imagem}
+%%\includegraphics{path relativo da imagem}
+%%\caption{legenda da figura}
+%%\label{fig:codigoFigura}
+%%\end{center}
+%%\end{figure}
+%
+%
+%\textit{Para escrever em itálico}
+%\textbf{Para escrever em negrito}
+%Para escrever em letra normal
+%``Para escrever texto entre aspas''
+%
+%Para fazer parágrafo, deixar uma linha em branco.
+%
+%Como fazer bullet points:
+%\begin{itemize}
+	%\item Item1
+	%\item Item2
+%\end{itemize}
+%
+%Como enumerar itens:
+%\begin{enumerate}
+	%\item Item 1
+	%\item Item 2
+%\end{enumerate}
+%
+%\begin{quote}``Isto é uma citação''\end{quote}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{O Jogo Oshi}
+
+Oshi é um jogo de tabuleiro inspirado numa lenda Japonesa em que a Deusa Amaterasu ofereceu ao primeiro imperador do Japão um jogo, representativo da sua sabedoria. De acordo com essa lenda, foi esse jogo que ajudou o imperador e a sua corte a gerir a sua influência e poder.\footnote{\label{note1}https://boardgamegeek.com/boardgame/23935/oshi}
+
+O jogo foi publicado pela WizKids em 2006 e criado por Tyler Bielman e Daniel Egnéus.\footnotemark[\ref{note1}]
+
+Descrever detalhadamente o jogo, a sua história e, principalmente, as suas regras.
+Devem ser incluidas imagens apropriadas para explicar o funcionamento do jogo.
+Devem ser incluidas as fontes de informação (e.g. URLs em rodapé).
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Representação do Estado do Jogo}
+
+Descrever a forma de representação do estado do tabuleiro (tipicamente uma lista de listas), com exemplificação em Prolog de posições iniciais do jogo, posições intermédias e finais, acompanhadas de imagens ilustrativas.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Visualização do Tabuleiro}
+
+Descrever a forma de visualização do tabuleiro em modo de texto e o(s) predicado(s) Prolog construídos para o efeito.
+Deve ser incluída pelo menos uma imagem correspondente ao output produzido pelo predicado de visualização.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Movimentos}
+
+Elencar os movimentos (tipos de jogadas) possíveis e definir os cabeçalhos dos predicados que serão utilizados (ainda não precisam de estar implementados).
+
+
+\end{document}
