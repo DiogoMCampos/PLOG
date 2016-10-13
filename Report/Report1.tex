@@ -7,6 +7,7 @@
 \usepackage{indentfirst}
 \usepackage{graphicx}
 \usepackage{verbatim}
+\usepackage{listings}
 
 
 \begin{document}
@@ -17,7 +18,7 @@
 \title{\Huge\textbf{Oshi}\linebreak\linebreak\linebreak
 \Large\textbf{Relatório Intercalar}\linebreak\linebreak
 \linebreak\linebreak
-\includegraphics[scale=0.1]{feup-logo.png}\linebreak\linebreak
+\includegraphics[scale=0.1]{img/feup-logo.png}\linebreak\linebreak
 \linebreak\linebreak
 \Large{Mestrado Integrado em Engenharia Informática e Computação} \linebreak\linebreak
 \Large{Programação em Lógica}\linebreak
@@ -87,8 +88,6 @@ O jogo é constituído por um tabuleiro 9x9 e as peças de duas cores (vermelho 
 	\item 2 peças de 2 andares
 	\item 2 peças de 3 andares
 \end{itemize}
-\newline
-\newline
 O objetivo final do jogo é o de ser o primeiro a conseguir empurrar para fora do tabuleiro peças do adversário num equivalente a 7 pontos. Cada peça vale em pontos o seu número de andares.
 \newline
 \newline
@@ -100,8 +99,97 @@ Este movimento pode ser de um número de casas igual ou inferior ao número de a
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Representação do Estado do Jogo}
 
-Descrever a forma de representação do estado do tabuleiro (tipicamente uma lista de listas), com exemplificação em Prolog de posições iniciais do jogo, posições intermédias e finais, acompanhadas de imagens ilustrativas.
+O tabuleiro está representado em Prolog através de uma lista de listas, sendo que usamos um espaço para representar uma casa vazia e usamos os seguintes símbolos para representar as peças de cada jogador.
 
+\begin{table}[h]
+\centering
+\caption{Símbolos das peças}
+\label{simbolos}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Tipo} & \textbf{Jogador 1} & \textbf{Jogador 2} \\ \hline
+1 andar       & .                  & *                  \\ \hline
+2 andares     & o                  & x                  \\ \hline
+3 andares     & O                  & X                  \\ \hline
+\end{tabular}
+\end{table}
+\clearpage
+
+Em Prolog, para representar o tabuleiro, usamos a seguinte board, em que \textit{w1}, \textit{w2} e \textit{w3} correspondem as peças do jogador 1 de 1, 2 e 3 andares, respetivamente. Os símbolos \textit{r1}, \textit{r2} e \textit{r3} representam em Prolog as peças do jogador 3.
+\bigskip
+\begin{lstlisting}[language=Prolog]
+    boardStart([[r3, o, o, o, o, o, o, o, r3],
+    		[o, o, r2, r1, r1, r1, r2, o, o],
+    		[o, o, o, o, r1, o, o, o, o],
+    		[o, o, o, o, o, o, o, o, o],
+    		[o, o, o, o, o, o, o, o, o],
+    		[o, o, o, o, o, o, o, o, o],
+    		[o, o, o, o, w1, o, o, o, o],
+    		[o, o, w2, w1, w1, w1, w2, o, o],
+    		[w3, o, o, o, o, o, o, o, w3]]).
+\end{lstlisting}
+\bigskip
+Esta representação corresponde a posíção inicial que se encontra na \textit{Figure 1}, produzida usando o predicado de visualização e na \textit{Figure 2}, uma imagem real do tabuleiro inicial do Oshi.
+
+\begin{figure}[h!]
+\centering
+\begin{minipage}{.4\textwidth}
+  \centering
+  \includegraphics[scale=0.4]{img/start-terminal.png}
+  \caption{Posição Inicial}
+  \label{fig:start}
+\end{minipage}%
+\begin{minipage}{.4\textwidth}
+  \centering
+  \includegraphics[scale=1.2]{img/start-picture.jpg}
+  \caption{Imagem Real da Posição Inicial}
+  \label{fig:real-pic}
+\end{minipage}
+\end{figure}
+
+Para uma possível posição intermédia, serve de exemplo a seguinte representação.
+\begin{lstlisting}[language=Prolog]
+    boardMidGame([[o, o, o, o, o, o, o, o, o],
+   		  [o, r1, o, o, o, o, o, o, o],
+    		  [o, o, o, o, r1, o, o, o, o],
+    	 	  [o, o, o, r3, o, o, o, o, o],
+    	 	  [o, o, o, o, o, o, w2, o, o],
+    	 	  [o, o, o, w3, o, r1, o, o, o],
+    		  [o, o, r3, o, o, o, o, o, o],
+    		  [o, o, o, o, o, w3, w1, r2, r2],
+    		  [o, o, w1, w1, o, o, o, o, w2]]).
+\end{lstlisting}
+\clearpage
+Sabendo que o jogo termina quando um jogador perder peças no valor de pelo menos 7 pontos, uma possível representação final do tabuleiro terá um dos jogadores nessa situação, tal como no exemplo que se segue:
+\bigskip
+\begin{lstlisting}[language=Prolog]
+	boardEndGame([[o, o, o, o, o, o, o, o, o],
+		      [o, o, o, o, o, o, o, o, o],
+		      [o, o, o, o, r1, o, o, o, o],
+		      [o, o, o, o, o, o, o, o, o],
+		      [o, o, o, o, o, o, w2, o, o],
+		      [o, o, o, o, o, r1, o, o, o],
+		      [o, o, r3, o, o, o, o, o, o],
+		      [o, o, o, o, o, w3, o, r2, r2],
+		      [o, o, w1, w1, o, o, o, o, o]]).
+\end{lstlisting}
+\bigskip
+
+\begin{figure}[h!]
+\centering
+\begin{minipage}{.4\textwidth}
+  \centering
+  \includegraphics[scale=0.4]{img/midgame-terminal.png}
+  \caption{Posição Intermédia (MidGame)}
+  \label{fig:mid}
+\end{minipage}%
+\begin{minipage}{.4\textwidth}
+  \centering
+  \includegraphics[scale=0.4]{img/endgame-terminal.png}
+  \caption{Posição Final (EndGame)}
+  \label{fig:end}
+\end{minipage}
+\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Visualização do Tabuleiro}
