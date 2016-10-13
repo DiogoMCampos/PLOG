@@ -194,23 +194,27 @@ Sabendo que o jogo termina quando um jogador perder peças no valor de pelo meno
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Visualização do Tabuleiro}
 
+\begin{lstlisting}[language=Prolog]
+displayCol(X, 0).
+
+displayCol([X|Xs], I) :- 
+	Next is I-1, 
+	write('  '), 
+	write(X), 
+	write(' '), 
+	displayCol(Xs, Next).
+\end{lstlisting}
 
 \begin{lstlisting}[language=Prolog]
-displayBoard(X, N, 0, A) :- 
-	write('   '), 
-	displaySeparator(N, N), 
-	nl, 
-	write('   '), 
-	displayNum(N, 1).
-		
-displayBoard([L|Ls], N, R, [A|As]) :- 
-	R1 is R-1,
-	write('   '), 
-	displaySeparator(N, N),
-	nl, write(' '), 
-	write(A),
-	displayLine(L, N, N),
-	displayBoard(Ls, N, R1, As).
+displayLine(X, N, 0) :- 
+	write(' | '), 
+	nl.
+	
+displayLine([X|Xs], N, R) :- 
+	R >= 0, R1 is R-1, 
+	write(' | '),
+	translate(X),
+	displayLine(Xs, N, R1).
 \end{lstlisting}
 
 \begin{lstlisting}[language=Prolog]
@@ -224,28 +228,23 @@ displaySeparator(N, R) :-
 \end{lstlisting}
 
 \begin{lstlisting}[language=Prolog]
-displayLine(X, N, 0) :- 
-	write(' | '), 
-	nl.
+displayBoard(X, N, 0) :- 
+	write('   '), 
+	displaySeparator(N, N), 
+	nl, 
+	write('   '), 
+	letters(A), 
+	displayCol(A, N).
 	
-displayLine([X|Xs], N, R) :- 
-	R >= 0, R1 is R-1, 
-	write(' | '),
-	translate(X), 
-	displayLine(Xs, N, R1).
-\end{lstlisting}
-
-\begin{lstlisting}[language=Prolog]
-displayNum(N, N) :- 
-	write('  '), 
-	write(N).
-	
-displayNum(N, I) :- 
-	N > 0, Next is I+1, 
-	write('  '), 
-	write(I), 
-	write(' '),
-	displayNum(N, Next).
+displayBoard([L|Ls], N, R) :- 
+	R1 is R-1,
+	write('   '), 
+	displaySeparator(N, N),
+	nl, 
+	write(' '), 
+	write(R),
+	displayLine(L, N, N),
+	displayBoard(Ls, N, R1).
 \end{lstlisting}
 
 Descrever a forma de visualização do tabuleiro em modo de texto e o(s) predicado(s) Prolog construídos para o efeito.
