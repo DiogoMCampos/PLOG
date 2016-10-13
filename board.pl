@@ -52,7 +52,7 @@ translate(r1) :- write('*').
 %   getNth([L|Ls], N, R) :- getNth(Ls, N-1, R).
 
 %game(X, N) :- board(X), displayBoard(X, N).
-start(X, N) :- boardStart(X), displayBoard(X, N, N, A), letters(A).
+start(X, N) :- boardStart(X), letters(A), displayBoard(X, N, N, A).
 midGame(X, N) :- boardMidGame(X), displayBoard(X, N).
 end(X, N) :- boardEndGame(X), displayBoard(X, N).
 
@@ -62,12 +62,12 @@ displayNum(N, I) :- N > 0, Next is I+1, write('  '), write(I), write(' '),displa
 displayLine(X, N, 0) :- write(' | '), nl.
 displayLine([X|Xs], N, R) :- R >= 0, R1 is R-1, write(' | '),translate(X),  displayLine(Xs, N, R1).
 
-displaySeparator(N, 0).
-displaySeparator(N, R) :- R1 is R-1, write('---+'), displaySeparator(N, R1).
+displaySeparator(N, 0) :- write('+').
+displaySeparator(N, R) :- R1 is R-1, write('+---'), displaySeparator(N, R1).
 
-displayBoard(X, N, 0, A) :- displaySeparator(N), nl, write('   '), displayNum(N, 1).
+displayBoard(X, N, 0, A) :- write('   '), displaySeparator(N, N), nl, write('   '), displayNum(N, 1).
 displayBoard([L|Ls], N, R, [A|As]) :- R1 is R-1,
-                            displaySeparator(N, N),
+                            write('   '), displaySeparator(N, N),
                             nl, write(' '), write(A),
                             displayLine(L, N, N),
                             displayBoard(Ls, N, R1, As).
