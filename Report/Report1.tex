@@ -211,7 +211,7 @@ displayLine(X, N, 0) :-
 	nl.
 	
 displayLine([X|Xs], N, R) :- 
-	R >= 0, R1 is R-1, 
+	R1 is R-1, 
 	write(' | '),
 	translate(X),
 	displayLine(Xs, N, R1).
@@ -255,6 +255,8 @@ Deve ser incluída pelo menos uma imagem correspondente ao output produzido pelo
 \section{Movimentos}
 
 Elencar os movimentos (tipos de jogadas) possíveis e definir os cabeçalhos dos predicados que serão utilizados (ainda não precisam de estar implementados).
+
+
 
 
 \end{document}

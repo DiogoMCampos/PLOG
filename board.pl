@@ -63,7 +63,7 @@ displayCol(X, 0).
 displayCol([X|Xs], I) :- Next is I-1, write('  '), write(X), write(' '), displayCol(Xs, Next).
 
 displayLine(X, N, 0) :- write(' | '), nl.
-displayLine([X|Xs], N, R) :- R >= 0, R1 is R-1, write(' | '),translate(X),  displayLine(Xs, N, R1).
+displayLine([X|Xs], N, R) :- R1 is R-1, write(' | '),translate(X),  displayLine(Xs, N, R1).
 
 displaySeparator(N, 0) :- write('+').
 displaySeparator(N, R) :- R1 is R-1, write('+---'), displaySeparator(N, R1).
