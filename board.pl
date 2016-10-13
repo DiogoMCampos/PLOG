@@ -28,13 +28,13 @@ boardMidGame([[o, o, o, o, o, o, o, o, o],
     [o, o, o, o, o, w3, w1, r2, r2],
     [o, o, w1, w1, o, o, o, o, w2]]).
 
-translate(o) :- write('  ').
-translate(w3) :- write('W3').
-translate(w2) :- write('W2').
-translate(w1) :- write('W1').
-translate(r3) :- write('R3').
-translate(r2) :- write('R2').
-translate(r1) :- write('R1').
+translate(o) :- write('   ').
+translate(w3) :- write(' O ').
+translate(w2) :- write(' o ').
+translate(w1) :- write(' . ').
+translate(r3) :- write(' X ').
+translate(r2) :- write(' x ').
+translate(r1) :- write(' * ').
 
 game(X) :- board(X), displayBoard(X).
 start(X) :- boardStart(X), displayBoard(X).
@@ -43,5 +43,7 @@ midGame(X) :- boardMidGame(X), displayBoard(X).
 displayLine([]) :- write('|'), nl.
 displayLine([X|Xs]) :- write('|'),translate(X),  displayLine(Xs).
 
-displayBoard([]) :- nl.
-displayBoard([L|Ls]) :- displayLine(L), nl, displayBoard(Ls).
+displaySeparator :- write('+---+---+---+---+---+---+---+---+---+').
+
+displayBoard([]) :- displaySeparator, nl.
+displayBoard([L|Ls]) :- displaySeparator, nl,displayLine(L), displayBoard(Ls).
