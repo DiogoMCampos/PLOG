@@ -276,9 +276,25 @@ translate(r1) :- write('*').
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Movimentos}
 
+Um turno de Oshi segue o seguinte ciclo:
+
+\begin{enumerate}
+	\item Pedir ao jogador que indique o movimento que pretende fazer.
+	\item Verificar se o movimento é possível.
+	\item Voltar ao ponto 1, caso não seja possível, ou prosseguir caso seja.
+	\item Efetuar o movimento.
+	\item Verificar se alguma peça foi empurrada para fora do tabuleiro.
+\end{enumerate}
+
+Dito isto, teremos que implementar um predicado que, recebendo do utilizador as coordenadas peça que ele pretende mover e as coordenadas da posição para onde a pretende mover, valide o movimento e verifique se é possível.
+\bigskip
+\begin{lstlisting}[language=Prolog]
+verifyMove(Player, InC, InL, DeC, DeL, P).
+\end{lstlisting}
+\bigskip
+
+
 Elencar os movimentos (tipos de jogadas) possíveis e definir os cabeçalhos dos predicados que serão utilizados (ainda não precisam de estar implementados).
-
-
 
 
 \end{document}
