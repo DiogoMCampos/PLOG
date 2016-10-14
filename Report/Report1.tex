@@ -1,5 +1,5 @@
 \documentclass[a4paper]{article}
-
+\usepackage[T1]{fontenc}
 %use the english line for english reports
 %usepackage[english]{babel}
 \usepackage[portuguese]{babel}
@@ -95,7 +95,7 @@ Em cada turno, um jogador apenas pode mover uma peça e tem de o fazer ortogonal
 \newline
 \newline
 Este movimento pode ser de um número de casas igual ou inferior ao número de andares da peça em questão, sendo que, durante o movimento, cada peça pode empurrar um número de peças também igual ou inferior à sua altura em andares.\footnote{\label{note2}https://boardgamegeek.com/thread/135806/rules-summary}
-
+\newpage
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Representação do Estado do Jogo}
 
@@ -113,20 +113,19 @@ O tabuleiro está representado em Prolog através de uma lista de listas, sendo 
 3 andares     & O                  & X                  \\ \hline
 \end{tabular}
 \end{table}
-\clearpage
 
 Em Prolog, para representar o tabuleiro, usamos a seguinte board, em que \textit{w1}, \textit{w2} e \textit{w3} correspondem as peças do jogador 1 de 1, 2 e 3 andares, respetivamente. Os símbolos \textit{r1}, \textit{r2} e \textit{r3} representam em Prolog as peças do jogador 3.
 \bigskip
 \begin{lstlisting}[language=Prolog]
-    boardStart([[r3, o, o, o, o, o, o, o, r3],
-    		[o, o, r2, r1, r1, r1, r2, o, o],
-    		[o, o, o, o, r1, o, o, o, o],
-    		[o, o, o, o, o, o, o, o, o],
-    		[o, o, o, o, o, o, o, o, o],
-    		[o, o, o, o, o, o, o, o, o],
-    		[o, o, o, o, w1, o, o, o, o],
-    		[o, o, w2, w1, w1, w1, w2, o, o],
-    		[w3, o, o, o, o, o, o, o, w3]]).
+boardStart([[r3, o, o, o, o, o, o, o, r3],
+	    [o, o, r2, r1, r1, r1, r2, o, o],
+	    [o, o, o, o, r1, o, o, o, o],
+	    [o, o, o, o, o, o, o, o, o],
+	    [o, o, o, o, o, o, o, o, o],
+	    [o, o, o, o, o, o, o, o, o],
+	    [o, o, o, o, w1, o, o, o, o],
+	    [o, o, w2, w1, w1, w1, w2, o, o],
+	    [w3, o, o, o, o, o, o, o, w3]]).
 \end{lstlisting}
 \bigskip
 Esta representação corresponde a posíção inicial que se encontra na \textit{Figure 1}, produzida usando o predicado de visualização e na \textit{Figure 2}, uma imagem real do tabuleiro inicial do Oshi.
@@ -146,33 +145,38 @@ Esta representação corresponde a posíção inicial que se encontra na \textit
   \label{fig:real-pic}
 \end{minipage}
 \end{figure}
-
-Para uma possível posição intermédia, serve de exemplo a seguinte representação.
-\begin{lstlisting}[language=Prolog]
-    boardMidGame([[o, o, o, o, o, o, o, o, o],
-   		  [o, r1, o, o, o, o, o, o, o],
-    		  [o, o, o, o, r1, o, o, o, o],
-    	 	  [o, o, o, r3, o, o, o, o, o],
-    	 	  [o, o, o, o, o, o, w2, o, o],
-    	 	  [o, o, o, w3, o, r1, o, o, o],
-    		  [o, o, r3, o, o, o, o, o, o],
-    		  [o, o, o, o, o, w3, w1, r2, r2],
-    		  [o, o, w1, w1, o, o, o, o, w2]]).
-\end{lstlisting}
 \clearpage
-Sabendo que o jogo termina quando um jogador perder peças no valor de pelo menos 7 pontos, uma possível representação final do tabuleiro terá um dos jogadores nessa situação, tal como no exemplo que se segue:
+Para uma possível posição intermédia, serve de exemplo a seguinte representação.
 \bigskip
 \begin{lstlisting}[language=Prolog]
-	boardEndGame([[o, o, o, o, o, o, o, o, o],
-		      [o, o, o, o, o, o, o, o, o],
-		      [o, o, o, o, r1, o, o, o, o],
-		      [o, o, o, o, o, o, o, o, o],
-		      [o, o, o, o, o, o, w2, o, o],
-		      [o, o, o, o, o, r1, o, o, o],
-		      [o, o, r3, o, o, o, o, o, o],
-		      [o, o, o, o, o, w3, o, r2, r2],
-		      [o, o, w1, w1, o, o, o, o, o]]).
+boardMidGame([[o, o, o, o, o, o, o, o, o],
+	      [o, r1, o, o, o, o, o, o, o],
+	      [o, o, o, o, r1, o, o, o, o],
+	      [o, o, o, r3, o, o, o, o, o],
+	      [o, o, o, o, o, o, w2, o, o],
+	      [o, o, o, w3, o, r1, o, o, o],
+	      [o, o, r3, o, o, o, o, o, o],
+	      [o, o, o, o, o, w3, w1, r2, r2],
+	      [o, o, w1, w1, o, o, o, o, w2]]).
 \end{lstlisting}
+
+\bigskip
+Sabendo que o jogo termina quando um jogador perder peças no valor de pelo menos 7 pontos, uma possível representação final do tabuleiro terá um dos jogadores nessa situação, tal como no exemplo que se segue:
+
+\bigskip
+
+\begin{lstlisting}[language=Prolog]
+boardEndGame([[o, o, o, o, o, o, o, o, o],
+	      [o, o, o, o, o, o, o, o, o],
+	      [o, o, o, o, r1, o, o, o, o],
+	      [o, o, o, o, o, o, o, o, o],
+	      [o, o, o, o, o, o, w2, o, o],
+	      [o, o, o, o, o, r1, o, o, o],
+	      [o, o, r3, o, o, o, o, o, o],
+	      [o, o, o, o, o, w3, o, r2, r2],
+	      [o, o, w1, w1, o, o, o, o, o]]).
+\end{lstlisting}
+
 \bigskip
 
 \begin{figure}[h!]
@@ -190,43 +194,12 @@ Sabendo que o jogo termina quando um jogador perder peças no valor de pelo meno
   \label{fig:end}
 \end{minipage}
 \end{figure}
-
+\newpage
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Visualização do Tabuleiro}
 
-\begin{lstlisting}[language=Prolog]
-displayCol(X, 0).
-
-displayCol([X|Xs], I) :- 
-	Next is I-1, 
-	write('  '), 
-	write(X), 
-	write(' '), 
-	displayCol(Xs, Next).
-\end{lstlisting}
-
-\begin{lstlisting}[language=Prolog]
-displayLine(X, N, 0) :- 
-	write(' | '), 
-	nl.
-	
-displayLine([X|Xs], N, R) :- 
-	R1 is R-1, 
-	write(' | '),
-	translate(X),
-	displayLine(Xs, N, R1).
-\end{lstlisting}
-
-\begin{lstlisting}[language=Prolog]
-displaySeparator(N, 0) :- 
-	write('+').
-	
-displaySeparator(N, R) :- 
-	R1 is R-1, 
-	write('+---'), 
-	displaySeparator(N, R1).
-\end{lstlisting}
-
+Para a visualização, foi desenvolvido o predicado \textit{displayBoard([L|Ls], N, R)}, sendo [L|Ls] a lista de listas correspondente ao tabuleiro, N o número total de colunas e R o número de colunas que falta imprimir. Este predicado é responsável por imprimir a linha que separa cada linha do tabuleiro, imprimir a própria linha (incluindo o número correspondente) e recursivamente imprimir o resto do tabuleiro.
+\bigskip
 \begin{lstlisting}[language=Prolog]
 displayBoard(X, N, 0) :- 
 	write('   '), 
@@ -246,10 +219,59 @@ displayBoard([L|Ls], N, R) :-
 	displayLine(L, N, N),
 	displayBoard(Ls, N, R1).
 \end{lstlisting}
+\bigskip
+O predicado com cabeçalho \textit{displayBoard(X, N, 0)} é o caso base, quando já se imprimiram todas as linhas do tabuleiro e é responsável por chamar o predicado \textit{displayCol([X|Xs], I)} que imprime as letras correspondentes a cada coluna.
+\bigskip
+\begin{lstlisting}[language=Prolog]
+displayCol(X, 0).
 
-Descrever a forma de visualização do tabuleiro em modo de texto e o(s) predicado(s) Prolog construídos para o efeito.
-Deve ser incluída pelo menos uma imagem correspondente ao output produzido pelo predicado de visualização.
+displayCol([X|Xs], I) :- 
+	Next is I-1, 
+	write('  '), 
+	write(X), 
+	write(' '), 
+	displayCol(Xs, Next).
+\end{lstlisting}
+\bigskip
+O predicado \textit{displaySeparator(N, R)}, sendo N o número de colunas total e R o número de colunas restantes, imprime uma linha de separação para todas as colunas do tabuleiro.
+\bigskip
+\begin{lstlisting}[language=Prolog]
+displaySeparator(N, 0) :- 
+	write('+').
+	
+displaySeparator(N, R) :- 
+	R1 is R-1, 
+	write('+---'), 
+	displaySeparator(N, R1).
+\end{lstlisting}
+\bigskip
+O predicado \textit{displayLine([X|Xs], N, R)} é responsável por imprimir uma linha, traduzindo da lista de listas representativa do tabuleiro os símbolos internos para uma representação mais \textit{human-friendly}. 
+\bigskip
+\begin{lstlisting}[language=Prolog]
+displayLine(X, N, 0) :- 
+	write(' | '), 
+	nl.
+	
+displayLine([X|Xs], N, R) :- 
+	R1 is R-1, 
+	write(' | '),
+	translate(X),
+	displayLine(Xs, N, R1).
+\end{lstlisting}
+\bigskip
+Esta tradução segue a \textit{Table 1} da página 3:
+\bigskip
+\begin{lstlisting}[language=Prolog]
+translate(o) :- write(' ').
+translate(w3) :- write('O').
+translate(w2) :- write('o').
+translate(w1) :- write('.').
+translate(r3) :- write('X').
+translate(r2) :- write('x').
+translate(r1) :- write('*').
+\end{lstlisting}
 
+\clearpage
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Movimentos}
