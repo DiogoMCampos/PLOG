@@ -140,7 +140,7 @@ Esta representação corresponde a posíção inicial que se encontra na \textit
 \end{minipage}%
 \begin{minipage}{.4\textwidth}
   \centering
-  \includegraphics[scale=1.2]{img/start-picture.jpg}
+  \includegraphics[scale=1.0]{img/start-picture.jpg}
   \caption{Imagem Real da Posição Inicial}
   \label{fig:real-pic}
 \end{minipage}
@@ -284,6 +284,7 @@ Um turno de Oshi segue o seguinte ciclo:
 	\item Voltar ao ponto 1, caso não seja possível, ou prosseguir caso seja.
 	\item Efetuar o movimento.
 	\item Verificar se alguma peça foi empurrada para fora do tabuleiro.
+	\item Se se confirmar o ponto 5, analisar se com a jogada actual o jogo termina.
 \end{enumerate}
 
 Dito isto, teremos que implementar um predicado que, recebendo do utilizador as coordenadas peça que ele pretende mover e as coordenadas da posição para onde a pretende mover, valide o movimento e verifique se é possível.
@@ -293,7 +294,40 @@ verifyMove(Player, InC, InL, DeC, DeL, P).
 \end{lstlisting}
 \bigskip
 
+Player representa quem irá efectuar a jogada;
+\newline
+InC e InL - são respectivmente a coluna e a linha da peça que pretende mover;\newline
+DeC e DeL - são respectivmente a coluna e a linha onde o jogador intenciona 		colocar a sua peça.\newline
+P - irá indicar se é possível ou não efectuar o movimento dado pelo jogador.
+\bigskip
 
+Uma jogada é possível se,
+\begin{itemize}
+	\item O número de casas que pretende andar é menor ou igual que o número de andares que essa peça contém.
+	\item O movimento for na horizontal ou vertical.
+	\item Caso seja possível mover 2 ou 3 casas, o movimento seja em apenas uma direcção.
+	
+\end{itemize}
+\bigskip
+
+Será preciso também um predicado que efectue as alterações na estrutura de dados de acordo com a jogada efectuada.
+\bigskip
+\begin{lstlisting}[language=Prolog]
+move(InC, InL, DeC, DeL).
+\end{lstlisting}
+\bigskip
+
+Os parametros correspondem aos mesmos que se encontram indicados acima.
+\bigskip
+
+No caso de uma jogada capturar uma peça, irá ser invocado um predicado que analisa se com esta jogada, a condição de terminação se confirma.
+\begin{lstlisting}[language=Prolog]
+finish(X).
+\end{lstlisting}
+\newline
+Este predicado ira adicionar os pontos correspondentes as peças capturadas e, se o valor total corresponder a um número superior ou igual a 7, termina o jogo.
+
+\bigskip
 Elencar os movimentos (tipos de jogadas) possíveis e definir os cabeçalhos dos predicados que serão utilizados (ainda não precisam de estar implementados).
 
 
