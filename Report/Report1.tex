@@ -8,6 +8,7 @@
 \usepackage{graphicx}
 \usepackage{verbatim}
 \usepackage{listings}
+\usepackage{multicol}
 
 
 \begin{document}
@@ -114,7 +115,7 @@ O tabuleiro está representado em Prolog através de uma lista de listas, sendo 
 \end{tabular}
 \end{table}
 
-Em Prolog, para representar o tabuleiro, usamos a seguinte board, em que \textit{w1}, \textit{w2} e \textit{w3} correspondem as peças do jogador 1 de 1, 2 e 3 andares, respetivamente. Os símbolos \textit{r1}, \textit{r2} e \textit{r3} representam em Prolog as peças do jogador 3.
+Em Prolog, para representar o tabuleiro, usamos a seguinte board. Os símbolos \textit{w1}, \textit{w2} e \textit{w3} correspondem as peças do jogador 1 de 1, 2 e 3 andares, respetivamente e, os símbolos \textit{r1}, \textit{r2} e \textit{r3} representam em Prolog as peças do jogador 2.
 \bigskip
 \begin{lstlisting}[language=Prolog]
 boardStart([[r3, o, o, o, o, o, o, o, r3],
@@ -140,7 +141,7 @@ Esta representação corresponde a posíção inicial que se encontra na \textit
 \end{minipage}%
 \begin{minipage}{.4\textwidth}
   \centering
-  \includegraphics[scale=1.0]{img/start-picture.jpg}
+  \includegraphics[scale=0.4]{img/start-picture.jpg}
   \caption{Imagem Real da Posição Inicial}
   \label{fig:real-pic}
 \end{minipage}
@@ -198,8 +199,9 @@ boardEndGame([[o, o, o, o, o, o, o, o, o],
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Visualização do Tabuleiro}
 
-Para a visualização, foi desenvolvido o predicado \textit{displayBoard([L|Ls], N, R)}, sendo [L|Ls] a lista de listas correspondente ao tabuleiro, N o número total de colunas e R o número de colunas que falta imprimir. Este predicado é responsável por imprimir a linha que separa cada linha do tabuleiro, imprimir a própria linha (incluindo o número correspondente) e recursivamente imprimir o resto do tabuleiro.
-\bigskip
+Para a visualização, foi desenvolvido o predicado \textit{displayBoard([L|Ls], N, R)}, sendo [L|Ls] a lista de listas correspondente ao tabuleiro, N a dimensão do tabuleiro e R o número de linhas que faltam imprimir. Este predicado imprime um separador intercalado com a linha do tabuleiro, a própria linha (com o número correspondente) e recursivamente imprimir o resto do tabuleiro.
+
+\begin{multicols}{2}
 \begin{lstlisting}[language=Prolog]
 displayBoard(X, N, 0) :- 
 	write('   '), 
@@ -209,6 +211,7 @@ displayBoard(X, N, 0) :-
 	letters(A), 
 	displayCol(A, N).
 	
+
 displayBoard([L|Ls], N, R) :- 
 	R1 is R-1,
 	write('   '), 
@@ -219,11 +222,17 @@ displayBoard([L|Ls], N, R) :-
 	displayLine(L, N, N),
 	displayBoard(Ls, N, R1).
 \end{lstlisting}
-\bigskip
-O predicado com cabeçalho \textit{displayBoard(X, N, 0)} é o caso base, quando já se imprimiram todas as linhas do tabuleiro e é responsável por chamar o predicado \textit{displayCol([X|Xs], I)} que imprime as letras correspondentes a cada coluna.
-\bigskip
+\end{multicols}
+
+O predicado \textit{displayBoard(X, N, 0)} é o caso base, quando já se imprimiram todas as linhas do tabuleiro e é responsável por chamar o predicado \textit{displayCol([X|Xs], I)} que imprime as letras correspondentes a cada coluna.
+
+\begin{multicols}{2}
 \begin{lstlisting}[language=Prolog]
 displayCol(X, 0).
+
+
+
+
 
 displayCol([X|Xs], I) :- 
 	Next is I-1, 
@@ -232,25 +241,31 @@ displayCol([X|Xs], I) :-
 	write(' '), 
 	displayCol(Xs, Next).
 \end{lstlisting}
-\bigskip
-O predicado \textit{displaySeparator(N, R)}, sendo N o número de colunas total e R o número de colunas restantes, imprime uma linha de separação para todas as colunas do tabuleiro.
-\bigskip
+\end{multicols}
+
+O predicado \textit{displaySeparator(N, R)}, sendo N o número de colunas total e R o número de colunas restantes, imprime um separador entre cada linha.
+
+\begin{multicols}{2}
 \begin{lstlisting}[language=Prolog]
 displaySeparator(N, 0) :- 
 	write('+').
+	
 	
 displaySeparator(N, R) :- 
 	R1 is R-1, 
 	write('+---'), 
 	displaySeparator(N, R1).
 \end{lstlisting}
-\bigskip
-O predicado \textit{displayLine([X|Xs], N, R)} é responsável por imprimir uma linha, traduzindo da lista de listas representativa do tabuleiro os símbolos internos para uma representação mais \textit{human-friendly}. 
-\bigskip
+\end{multicols}
+
+O predicado \textit{displayLine([X|Xs], N, R)} é responsável por reproduzir uma linha, traduzindo da lista de listas representativa do tabuleiro os símbolos internos para uma representação mais \textit{human-friendly}. 
+
+\begin{multicols}{2}
 \begin{lstlisting}[language=Prolog]
 displayLine(X, N, 0) :- 
 	write(' | '), 
 	nl.
+	
 	
 displayLine([X|Xs], N, R) :- 
 	R1 is R-1, 
@@ -258,9 +273,11 @@ displayLine([X|Xs], N, R) :-
 	translate(X),
 	displayLine(Xs, N, R1).
 \end{lstlisting}
-\bigskip
+\end{multicols}
+
 Esta tradução segue a \textit{Table 1} da página 3:
-\bigskip
+
+\begin{multicols}{2}
 \begin{lstlisting}[language=Prolog]
 translate(o) :- write(' ').
 translate(w3) :- write('O').
@@ -270,6 +287,7 @@ translate(r3) :- write('X').
 translate(r2) :- write('x').
 translate(r1) :- write('*').
 \end{lstlisting}
+\end{multicols}
 
 \clearpage
 
