@@ -48,42 +48,77 @@ translate(r3) :- write('X').
 translate(r2) :- write('x').
 translate(r1) :- write('*').
 
+setupGame(X, N) :-
+    N < 10,
+    N >= 0,
+    boardStart(X),
+    displayBoard(X, N, N).
 
+midGame(X, N) :-
+    boardMidGame(X),
+    displayBoard(X, N, N).
 
-%getNth([L|Ls], 0, R).
-%getNth([L|Ls], N, R) :- Next is N-1, getNth(Ls, Next, R).
-
-c(N, R) :- letters(X), getNth(X, N, R).
-
-setupGame(X, N) :- N < 10, N >= 0, boardStart(X), displayBoard(X, N, N).
-midGame(X, N) :- boardMidGame(X), displayBoard(X, N).
-end(X, N) :- boardEndGame(X), displayBoard(X, N).
+end(X, N) :-
+    boardEndGame(X),
+    displayBoard(X, N, N).
 
 displayCol(X, 0).
-displayCol([X|Xs], I) :- Next is I-1, write('  '), write(X), write(' '), displayCol(Xs, Next).
+displayCol([X|Xs], I) :-
+    Next is I-1,
+    write('  '),
+    write(X),
+    write(' '),
+    displayCol(Xs, Next).
 
-displayLine(X, N, 0) :- write(' | '), nl.
-displayLine([X|Xs], N, R) :- R1 is R-1, write(' | '),translate(X),  displayLine(Xs, N, R1).
+displayLine(X, N, 0) :-
+    write(' | '),
+    nl.
+displayLine([X|Xs], N, R) :-
+    R1 is R-1,
+    write(' | '),
+    translate(X),
+    displayLine(Xs, N, R1).
 
 displaySeparator(N, 0) :- write('+').
-displaySeparator(N, R) :- R1 is R-1, write('+---'), displaySeparator(N, R1).
+displaySeparator(N, R) :-
+    R1 is R-1,
+    write('+---'),
+    displaySeparator(N, R1).
 
-displayBoard(X, N, 0) :- write('   '), displaySeparator(N, N), nl, write('   '), letters(A), displayCol(A, N).
-displayBoard([L|Ls], N, R) :- R1 is R-1,
-                            write('   '), displaySeparator(N, N),
-                            nl, write(' '), write(R),
-                            displayLine(L, N, N),
-                            displayBoard(Ls, N, R1).
+displayBoard(X, N, 0) :-
+    write('   '),
+    displaySeparator(N, N),
+    nl,
+    write('   '),
+    letters(A),
+    displayCol(A, N).
+displayBoard([L|Ls], N, R) :-
+    R1 is R-1,
+    write('   '),
+    displaySeparator(N, N),
+    nl,
+    write(' '),
+    write(R),
+    displayLine(L, N, N),
+    displayBoard(Ls, N, R1).
 
-/*askMove(Player, InC, InL, DeC, DeL).
-verifyMove(Player, InC, InL, DeC, DeL, P).
-
+askMove(Player, InC, InL, DeC, DeL).
+verifyMove([X|Xs], Player, InC, InL, DeC, DeL, P).
 warn(P).
-move(InC, InL, DeC, DeL).
+move([X|Xs], InC, InL, DeC, DeL).
 finish(X).
 
-analyseMove(Player):- askMove(InC, InL, DeC, DeL), verifyMove(InC, InL, DeC, DeL, P), warn(P).
+analyseMove([X|Xs], Player) :-
+    askMove([X|Xs], InC, InL, DeC, DeL),
+    verifyMove([X|Xs], InC, InL, DeC, DeL, P),
+    warn(P).
 
-play(X, Player) :- analyseMove(Player), move(InC, InL, DeC, DeL), finish(X), play(X, OtherPlayer).
+play(X, Player, OtherPlayer) :-
+    analyseMove(Player),
+    move(InC, InL, DeC, DeL),
+    finish(X),
+    play(X, OtherPlayer, Player).
 
-game(X) :- setupGame(X, 9), play(X, a).*/
+game(X) :-
+    setupGame(X, 9),
+    play(X, a, b).
