@@ -96,7 +96,7 @@ Em cada turno, um jogador apenas pode mover uma peça e tem de o fazer ortogonal
 \newline
 \newline
 Este movimento pode ser de um número de casas igual ou inferior ao número de andares da peça em questão, sendo que, durante o movimento, cada peça pode empurrar um número de peças também igual ou inferior à sua altura em andares.\footnote{\label{note2}https://boardgamegeek.com/thread/135806/rules-summary}
-\newpage
+%\newpage
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Representação do Estado do Jogo}
 
@@ -117,6 +117,7 @@ O tabuleiro está representado em Prolog através de uma lista de listas, sendo 
 
 Em Prolog, para representar o tabuleiro, usamos a seguinte board. Os símbolos \textit{w1}, \textit{w2} e \textit{w3} correspondem as peças do jogador 1 de 1, 2 e 3 andares, respetivamente e, os símbolos \textit{r1}, \textit{r2} e \textit{r3} representam em Prolog as peças do jogador 2.
 \bigskip
+\small
 \begin{lstlisting}[language=Prolog]
 boardStart([[r3, o, o, o, o, o, o, o, r3],
 	    [o, o, r2, r1, r1, r1, r2, o, o],
@@ -128,6 +129,7 @@ boardStart([[r3, o, o, o, o, o, o, o, r3],
 	    [o, o, w2, w1, w1, w1, w2, o, o],
 	    [w3, o, o, o, o, o, o, o, w3]]).
 \end{lstlisting}
+\normalsize
 \bigskip
 Esta representação corresponde a posíção inicial que se encontra na \textit{Figure 1}, produzida usando o predicado de visualização e na \textit{Figure 2}, uma imagem real do tabuleiro inicial do Oshi.
 
@@ -135,20 +137,21 @@ Esta representação corresponde a posíção inicial que se encontra na \textit
 \centering
 \begin{minipage}{.4\textwidth}
   \centering
-  \includegraphics[scale=0.4]{img/start-terminal.png}
+  \includegraphics[scale=0.3]{img/start-terminal.png}
   \caption{Posição Inicial}
   \label{fig:start}
 \end{minipage}%
 \begin{minipage}{.4\textwidth}
   \centering
-  \includegraphics[scale=1.2]{img/start-picture.jpg}
+  \includegraphics[scale=0.3]{img/start-picture.jpg}
   \caption{Imagem Real da Posição Inicial}
   \label{fig:real-pic}
 \end{minipage}
 \end{figure}
-\clearpage
+%\clearpage
 Para uma possível posição intermédia, serve de exemplo a seguinte representação.
 \bigskip
+\small
 \begin{lstlisting}[language=Prolog]
 boardMidGame([[o, o, o, o, o, o, o, o, o],
 	      [o, r1, o, o, o, o, o, o, o],
@@ -160,12 +163,12 @@ boardMidGame([[o, o, o, o, o, o, o, o, o],
 	      [o, o, o, o, o, w3, w1, r2, r2],
 	      [o, o, w1, w1, o, o, o, o, w2]]).
 \end{lstlisting}
-
+\normalsize
 \bigskip
 Sabendo que o jogo termina quando um jogador perder peças no valor de pelo menos 7 pontos, uma possível representação final do tabuleiro terá um dos jogadores nessa situação, tal como no exemplo que se segue:
 
 \bigskip
-
+\small
 \begin{lstlisting}[language=Prolog]
 boardEndGame([[o, o, o, o, o, o, o, o, o],
 	      [o, o, o, o, o, o, o, o, o],
@@ -177,20 +180,20 @@ boardEndGame([[o, o, o, o, o, o, o, o, o],
 	      [o, o, o, o, o, w3, o, r2, r2],
 	      [o, o, w1, w1, o, o, o, o, o]]).
 \end{lstlisting}
-
+\normalsize
 \bigskip
 
 \begin{figure}[h!]
 \centering
 \begin{minipage}{.4\textwidth}
   \centering
-  \includegraphics[scale=0.4]{img/midgame-terminal.png}
+  \includegraphics[scale=0.3]{img/midgame-terminal.png}
   \caption{Posição Intermédia (MidGame)}
   \label{fig:mid}
 \end{minipage}%
 \begin{minipage}{.4\textwidth}
   \centering
-  \includegraphics[scale=0.4]{img/endgame-terminal.png}
+  \includegraphics[scale=0.3]{img/endgame-terminal.png}
   \caption{Posição Final (EndGame)}
   \label{fig:end}
 \end{minipage}
@@ -277,7 +280,7 @@ displayLine([X|Xs], N, R) :-
 
 Esta tradução segue a \textit{Table 1} da página 3:
 
-\begin{multicols}{2}
+\begin{multicols}{2}[tiny]
 \begin{lstlisting}[language=Prolog]
 translate(o) :- write(' ').
 translate(w3) :- write('O').
@@ -329,7 +332,7 @@ Uma jogada é possível se:
 	\item O número de casas que pretende andar é menor ou igual que o número de andares que essa peça contém.
 	\item O movimento for na horizontal ou vertical.
 	\item Caso seja possível mover 2 ou 3 casas, o movimento seja em apenas uma direcção.
-	\item Se houver necessidade de empurrar outras peças para seguir o caminho desejado, o número de peças é menor é menor ou igual que o número de andares que a peça do jogador contém.
+	\item Se houver necessidade de empurrar outras peças para seguir o caminho desejado, o número de peças é menor ou igual que o número de andares que a peça do jogador contém.
 	
 \end{itemize}
 \bigskip
