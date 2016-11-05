@@ -102,16 +102,24 @@ displayBoard([L|Ls], N, R) :-
     displayLine(L, N, N),
     displayBoard(Ls, N, R1).
 
-askMove(Player, InC, InL, DeC, DeL).
-verifyMove([X|Xs], Player, InC, InL, DeC, DeL, P).
-warn(P).
+askMove(InC, InL, DeC, DeL) :-
+    write('Coordinates of the piece to move (ex: \'d3\'.)'),
+    nl,
+    read(Input),
+    atom_chars(Input, [InC|[InL|Rest]]),
+    write('Coordinates of the pieces destination (ex: \'f3\'.)'),
+    nl,
+    read(Dest),
+    atom_chars(Dest, [DeC|[DeL|Rest]]).
+
+
+verifyMove([X|Xs], Player, InC, InL, DeC, DeL).
 move([X|Xs], InC, InL, DeC, DeL).
 finish(X).
 
 analyseMove([X|Xs], Player) :-
     askMove([X|Xs], InC, InL, DeC, DeL),
     verifyMove([X|Xs], InC, InL, DeC, DeL, P),
-    warn(P).
 
 play(X, Player, OtherPlayer) :-
     analyseMove(Player),
