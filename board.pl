@@ -62,7 +62,7 @@ end(X, N) :-
     boardEndGame(X),
     displayBoard(X, N, N).
 
-displayCol(X, 0).
+displayCol(_, 0).
 displayCol([X|Xs], I) :-
     Next is I-1,
     write('  '),
@@ -70,7 +70,7 @@ displayCol([X|Xs], I) :-
     write(' '),
     displayCol(Xs, Next).
 
-displayLine(X, N, 0) :-
+displayLine(_, _, 0) :-
     write(' | '),
     nl.
 displayLine([X|Xs], N, R) :-
@@ -79,13 +79,13 @@ displayLine([X|Xs], N, R) :-
     translate(X),
     displayLine(Xs, N, R1).
 
-displaySeparator(N, 0) :- write('+').
+displaySeparator(_, 0) :- write('+').
 displaySeparator(N, R) :-
     R1 is R-1,
     write('+---'),
     displaySeparator(N, R1).
 
-displayBoard(X, N, 0) :-
+displayBoard(_, N, 0) :-
     write('   '),
     displaySeparator(N, N),
     nl,
@@ -113,29 +113,43 @@ askMove(InC, InL, DeC, DeL) :-
     atom_chars(Dest, [DeC|[DeL|Rest]]).
 
 withinBoard(X, Y, Size) :-
-    X > 0,
-    X =< Size,
+    X @>= 'A',
+    X @=< 'I',
     Y > 0,
     Y =< Size.
+
+isOrthogonal(InC, InL, DeC, DeL) :-
+    (InC == DeC, InL \== DeL);
+    (InC \== DeC, InL == DeL).
+
+returnResult(Result, Result).
+
+getListElement(Index, [X|Xs], Iterator, Result) :-
+    Index =\= Iterator ->
+        NewIterator is Iterator+1,
+        getElement(Index, Xs, NewIterator, Result);
+    returnResult(X,Result).
+
+
 
 /* Missing Player and [X|Xs] and board size is currently hardcoded */
 verifyMove(InC, InL, DeC, DeL) :-
     withinBoard(InC, InL, 9),
     withinBoard(DeC, DeL, 9).
 
-move([X|Xs], InC, InL, DeC, DeL).
-finish(X).
+%move([X|Xs], InC, InL, DeC, DeL).
+%finish(X).
 
 analyseMove([X|Xs], Player) :-
     askMove(InC, InL, DeC, DeL),
-    verifyMove(InC, InL, DeC, DeL),
+    verifyMove(InC, InL, DeC, DeL).
 
-analyseMove([X|Xs], Player) :-
-    askMove([X|Xs], InC, InL, DeC, DeL),
-    verifyMove([X|Xs], InC, InL, DeC, DeL, P),
+%analyseMove([X|Xs], Player) :-
+%    askMove([X|Xs], InC, InL, DeC, DeL),
+%    verifyMove([X|Xs], InC, InL, DeC, DeL, P).
 
 play(X, Player, OtherPlayer) :-
-    analyseMove(Player),
+    analyseMove(X, Player),
     move(InC, InL, DeC, DeL),
     finish(X),
     play(X, OtherPlayer, Player).
