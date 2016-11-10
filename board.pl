@@ -112,10 +112,23 @@ askMove(InC, InL, DeC, DeL) :-
     read(Dest),
     atom_chars(Dest, [DeC|[DeL|Rest]]).
 
+withinBoard(X, Y, Size) :-
+    X > 0,
+    X =< Size,
+    Y > 0,
+    Y =< Size.
 
-verifyMove([X|Xs], Player, InC, InL, DeC, DeL).
+/* Missing Player and [X|Xs] and board size is currently hardcoded */
+verifyMove(InC, InL, DeC, DeL) :-
+    withinBoard(InC, InL, 9),
+    withinBoard(DeC, DeL, 9).
+
 move([X|Xs], InC, InL, DeC, DeL).
 finish(X).
+
+analyseMove([X|Xs], Player) :-
+    askMove(InC, InL, DeC, DeL),
+    verifyMove(InC, InL, DeC, DeL),
 
 analyseMove([X|Xs], Player) :-
     askMove([X|Xs], InC, InL, DeC, DeL),
