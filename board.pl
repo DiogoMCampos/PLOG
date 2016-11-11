@@ -146,9 +146,41 @@ getPiece(ColumnIndex, LineIndex, [X|Xs], Piece) :-
     getListElement(ColumnIndex, Line, 1, Piece),
     isPiece(Piece).
 
-housesAffected([X|Xs], Column, Line, HorMove, VertMove, Max, Result) :-
-    withinBoard(Column, Line, 9),
-    isPiece(Column, Line, [X|Xs]).
+newHorizontalCoord(Column, HorMove, NewColumn) :-
+    (HorMove > 0 -> NewColumn is Column+1);
+    (HorMove < 0 -> NewColumn is Column-1);
+    (HorMove == 0 ->NewColumn is Column).
+
+newVerticalCoord(Line, VertMove, NewLine) :-
+    (VertMove > 0 -> NewLine is Line+1);
+    (VertMove < 0 -> NewLine is Line-1);
+    (VertMove == 0 ->NewLine is Line).
+
+
+housesAffected([X|Xs], Column, Line, HorMove, VertMove, 0, Affected, Affected) :- write('ola').
+housesAffected([X|Xs], Column, Line, HorMove, VertMove, Amount, Affected, Total) :-
+    withinBoard(Column, Line, 9) ->
+        ((getPiece(Column, Line, [X|Xs],Piece) ->
+            ((Affected - 1) >= 0 ->
+                NewAffected is Affected - 1,
+                NewAmount is Amount,
+                write('problema dos parentesis');
+            !,fail)
+        ;   NewAmount is Amount - 1,
+            NewAffected is Affected),
+        %write('yoyoyo' + NewAffected),
+        newHorizontalCoord(Column, HorMove, NewColumn),
+        newVerticalCoord(Line, VertMove, NewLine),
+        nl, write(NewColumn - NewLine  + 'yayayaya '),write(NewAmount), nl,
+        housesAffected([X|Xs], NewColumn, NewLine, HorMove, VertMove, NewAmount, NewAffected, Total))
+    ;   Total is Affected.
+
+a(A,B,Y,Z, Total) :-
+    Max is 3,
+    boardStart(X),
+    housesAffected(X, A, B, Y, Z, 4, 4, InvTotal), write(InvTotal),
+    Total is 4 - InvTotal.
+
 
 /* Missing Player and [X|Xs] and board size is currently hardcoded */
 verifyMove(InC, InL, DeC, DeL) :-
