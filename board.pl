@@ -139,9 +139,12 @@ getListElement(Index, [X|Xs], Iterator, Result) :-
         getListElement(Index, Xs, NewIterator, Result);
     returnResult(X,Result).
 
-isPiece(ColumnIndex, LineIndex, [X|Xs], Piece) :-
+isPiece(piece(_,_)).
+
+getPiece(ColumnIndex, LineIndex, [X|Xs], Piece) :-
     getListElement(10-LineIndex, [X|Xs], 1, Line),
-    getListElement(ColumnIndex, Line, 1, Piece).
+    getListElement(ColumnIndex, Line, 1, Piece),
+    isPiece(Piece).
 
 housesAffected([X|Xs], Column, Line, HorMove, VertMove, Max, Result) :-
     withinBoard(Column, Line, 9),
