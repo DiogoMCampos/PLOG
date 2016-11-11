@@ -48,6 +48,12 @@ translate(r3) :- write('X').
 translate(r2) :- write('x').
 translate(r1) :- write('*').
 
+convertLetterToIndex(Column, [X|Xs], Index, Result) :-
+    Column \== X ->
+        NewIndex is Index+1,
+        convertLetterToIndex(Column, Xs, NewIndex, Result);
+    returnResult(Index, Result).
+
 setupGame(X, N) :-
     N < 10,
     N >= 0,
@@ -113,8 +119,8 @@ askMove(InC, InL, DeC, DeL) :-
     atom_chars(Dest, [DeC|[DeL|Rest]]).
 
 withinBoard(X, Y, Size) :-
-    X @>= 'A',
-    X @=< 'I',
+    X > 0,
+    X =< Size,
     Y > 0,
     Y =< Size.
 
@@ -130,19 +136,32 @@ getListElement(Index, [X|Xs], Iterator, Result) :-
         getElement(Index, Xs, NewIterator, Result);
     returnResult(X,Result).
 
+isPiece(ColumnIndex, LineIndex, [X|Xs]) :-
+    getListElement(10-LineIndex, [X|Xs], 1, Line),
+    getListElement(ColumnIndex, Line, 1, Result).
+
+housesAffected([X|Xs], Column, Line, HorMove, VertMove, Max, Result) :-
+    withinBoard(Column, Line, 9),
+    isPiece(Column, Line, [X|Xs]).
+
+
 
 
 /* Missing Player and [X|Xs] and board size is currently hardcoded */
 verifyMove(InC, InL, DeC, DeL) :-
     withinBoard(InC, InL, 9),
-    withinBoard(DeC, DeL, 9).
+    withinBoard(DeC, DeL, 9),
+    isOrthogonal(InC, InL, DeC, DeL).
 
 %move([X|Xs], InC, InL, DeC, DeL).
 %finish(X).
 
 analyseMove([X|Xs], Player) :-
     askMove(InC, InL, DeC, DeL),
-    verifyMove(InC, InL, DeC, DeL).
+    letters(A),
+    convertLetterToIndex(InC, A, 1, InColInd),
+    convertLetterToIndex(DeC, A, 1, DeColInd),
+    verifyMove(InColInd, InL, DeColInd, DeL).
 
 %analyseMove([X|Xs], Player) :-
 %    askMove([X|Xs], InC, InL, DeC, DeL),
