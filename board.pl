@@ -8,45 +8,48 @@ board([[o, o, o, o, o, o, o, o, o],
     [o, o, o, o, o, o, o, o, o],
     [o, o, o, o, o, o, o, o, o]]).
 
-boardStart([[r3, o, o, o, o, o, o, o, r3],
-    [o, o, r2, r1, r1, r1, r2, o, o],
-    [o, o, o, o, r1, o, o, o, o],
+boardStart([[piece(r, 3), o, o, o, o, o, o, o, piece(r, 3)],
+    [o, o, piece(r, 2), piece(r, 1), piece(r, 1), piece(r, 1), piece(r, 2), o, o],
+    [o, o, o, o, piece(r, 1), o, o, o, o],
     [o, o, o, o, o, o, o, o, o],
     [o, o, o, o, o, o, o, o, o],
     [o, o, o, o, o, o, o, o, o],
-    [o, o, o, o, w1, o, o, o, o],
-    [o, o, w2, w1, w1, w1, w2, o, o],
-    [w3, o, o, o, o, o, o, o, w3]]).
+    [o, o, o, o, piece(w, 1), o, o, o, o],
+    [o, o, piece(w, 2), piece(w, 1), piece(w, 1), piece(w, 1), piece(w, 2), o, o],
+    [piece(w, 3), o, o, o, o, o, o, o, piece(w, 3)]]).
 
 boardMidGame([[o, o, o, o, o, o, o, o, o],
-    [o, r1, o, o, o, o, o, o, o],
-    [o, o, o, o, r1, o, o, o, o],
-    [o, o, o, r3, o, o, o, o, o],
-    [o, o, o, o, o, o, w2, o, o],
-    [o, o, o, w3, o, r1, o, o, o],
-    [o, o, r3, o, o, o, o, o, o],
-    [o, o, o, o, o, w3, w1, r2, r2],
-    [o, o, w1, w1, o, o, o, o, w2]]).
+    [o, piece(r, 1), o, o, o, o, o, o, o],
+    [o, o, o, o, piece(r, 1), o, o, o, o],
+    [o, o, o, piece(r, 3), o, o, o, o, o],
+    [o, o, o, o, o, o, piece(w, 2), o, o],
+    [o, o, o, piece(w, 3), o, piece(r, 1), o, o, o],
+    [o, o, piece(r, 3), o, o, o, o, o, o],
+    [o, o, o, o, o, piece(w, 3), piece(w, 1), piece(r, 2), piece(r, 2)],
+    [o, o, piece(w, 1), piece(w, 1), o, o, o, o, piece(w, 2)]]).
 
 boardEndGame([[o, o, o, o, o, o, o, o, o],
     [o, o, o, o, o, o, o, o, o],
-    [o, o, o, o, r1, o, o, o, o],
+    [o, o, o, o, piece(r, 1), o, o, o, o],
     [o, o, o, o, o, o, o, o, o],
-    [o, o, o, o, o, o, w2, o, o],
-    [o, o, o, o, o, r1, o, o, o],
-    [o, o, r3, o, o, o, o, o, o],
-    [o, o, o, o, o, w3, o, r2, r2],
-    [o, o, w1, w1, o, o, o, o, o]]).
+    [o, o, o, o, o, o, piece(w, 2), o, o],
+    [o, o, o, o, o, piece(r, 1), o, o, o],
+    [o, o, piece(r, 3), o, o, o, o, o, o],
+    [o, o, o, o, o, piece(w, 3), o, piece(r, 2), piece(r, 2)],
+    [o, o, piece(w, 1), piece(w, 1), o, o, o, o, o]]).
 
 letters(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I']).
 
 translate(o) :- write(' ').
-translate(w3) :- write('O').
-translate(w2) :- write('o').
-translate(w1) :- write('.').
-translate(r3) :- write('X').
-translate(r2) :- write('x').
-translate(r1) :- write('*').
+translate(piece(w, 3)) :- write('O').
+translate(piece(w, 2)) :- write('o').
+translate(piece(w, 1)) :- write('.').
+translate(piece(r, 3)) :- write('X').
+translate(piece(r, 2)) :- write('x').
+translate(piece(r, 1)) :- write('*').
+
+pieceHeight(piece(_, Height), Height).
+pieceColor(piece(Color, _), Color).
 
 convertLetterToIndex(Column, [X|Xs], Index, Result) :-
     Column \== X ->
@@ -133,7 +136,7 @@ returnResult(Result, Result).
 getListElement(Index, [X|Xs], Iterator, Result) :-
     Index =\= Iterator ->
         NewIterator is Iterator+1,
-        getElement(Index, Xs, NewIterator, Result);
+        getListElement(Index, Xs, NewIterator, Result);
     returnResult(X,Result).
 
 isPiece(ColumnIndex, LineIndex, [X|Xs]) :-
@@ -143,9 +146,6 @@ isPiece(ColumnIndex, LineIndex, [X|Xs]) :-
 housesAffected([X|Xs], Column, Line, HorMove, VertMove, Max, Result) :-
     withinBoard(Column, Line, 9),
     isPiece(Column, Line, [X|Xs]).
-
-
-
 
 /* Missing Player and [X|Xs] and board size is currently hardcoded */
 verifyMove(InC, InL, DeC, DeL) :-
