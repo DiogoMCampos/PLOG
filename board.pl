@@ -139,6 +139,12 @@ getListElement(Index, [X|Xs], Iterator, Result) :-
         getListElement(Index, Xs, NewIterator, Result);
     returnResult(X,Result).
 
+getPiece(Column-LineIndex, [X|Xs], Piece) :-
+    letters(L),
+    convertLetterToIndex(Column, L, 1, ColumnIndex),
+    getListElement(10-LineIndex, [X|Xs], 1, Line),
+    getListElement(ColumnIndex, Line, 1, Piece).
+
 isPiece(ColumnIndex, LineIndex, [X|Xs]) :-
     getListElement(10-LineIndex, [X|Xs], 1, Line),
     getListElement(ColumnIndex, Line, 1, Result).
