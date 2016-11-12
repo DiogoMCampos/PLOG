@@ -158,7 +158,7 @@ newVerticalCoord(Line, VertMove, NewLine) :-
     (VertMove < 0 -> NewLine is Line-1);
     (VertMove == 0 ->NewLine is Line).
 
-housesAffected([X|Xs], Column, Line, HorMove, VertMove, 0, Affected, Affected) :- write('ola').
+housesAffected(_, _, _, _, _, 0, Affected, Affected, _).
 housesAffected([X|Xs], Column, Line, HorMove, VertMove, Amount, Affected, Total, [Pieces|Rest]) :-
     withinBoard(Column, Line, 9) ->
         newHorizontalCoord(Column, HorMove, NewColumn),
@@ -199,7 +199,7 @@ abc(X) :- boardMidGame(Board), getPiecesCoordinates(Board, 1,1,X,Coords, 0, Piec
 
 a(A,B,Y,Z) :-
     boardStart(X),
-    housesAffected(X, A, B, Y, Z, 4, 4, InvTotal, Pieces), write(Pieces),
+    housesAffected(X, A, B, Y, Z, 4, 4, InvTotal, Pieces), reverse(Pieces, [_|Real]),write(Real),
     Total is 4 - InvTotal,
     nl, write(Total).
 
