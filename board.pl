@@ -1,3 +1,5 @@
+:-use_module(library(lists)).
+
 board([[o, o, o, o, o, o, o, o, o],
     [o, o, o, o, o, o, o, o, o],
     [o, o, o, o, o, o, o, o, o],
@@ -156,7 +158,6 @@ newVerticalCoord(Line, VertMove, NewLine) :-
     (VertMove < 0 -> NewLine is Line-1);
     (VertMove == 0 ->NewLine is Line).
 
-
 housesAffected([X|Xs], Column, Line, HorMove, VertMove, 0, Affected, Affected) :- write('ola').
 housesAffected([X|Xs], Column, Line, HorMove, VertMove, Amount, Affected, Total) :-
     withinBoard(Column, Line, 9) ->
@@ -167,12 +168,32 @@ housesAffected([X|Xs], Column, Line, HorMove, VertMove, Amount, Affected, Total)
             !,fail)
         ;   NewAmount is Amount - 1,
             NewAffected is Affected),
-        %write('yoyoyo' + NewAffected),
         newHorizontalCoord(Column, HorMove, NewColumn),
         newVerticalCoord(Line, VertMove, NewLine),
-        write(NewColumn - NewLine  + 'yayayaya '),write(NewAmount), nl,
         housesAffected([X|Xs], NewColumn, NewLine, HorMove, VertMove, NewAmount, NewAffected, Total)
     ;   Total is Affected.
+
+/* Saves all pieces coordinates from one player still in the game in a list. Returns num remaining pieces too*/
+getPiecesCoordinates(Board, Column, Line, Side, [PieceCoords|Locals], PiecesLeft, PiecesTotal) :-
+    (Column + 1 > 9 ->
+        NewCol is 1,
+        NewLine is Line + 1
+    ;   NewCol is Column + 1,
+        NewLine is Line),
+
+    (Line =< 9 ->
+        (getPiece(Column, Line, Board, Piece) ->
+            pieceColor(Piece, Color),
+            (Color == Side ->
+                pieceHeight(Piece,Height),
+                returnResult(PieceCoords, Column-Line-Height),
+                NewPiecesLeft is PiecesLeft + 1,
+                getPiecesCoordinates(Board, NewCol, NewLine, Side, Locals, NewPiecesLeft, PiecesTotal),!
+            ;   getPiecesCoordinates(Board, NewCol, NewLine, Side, [PieceCoords|Locals], PiecesLeft, PiecesTotal),!)
+        ;   getPiecesCoordinates(Board, NewCol, NewLine, Side, [PieceCoords|Locals], PiecesLeft, PiecesTotal),!)
+    ;   returnResult(PiecesLeft, PiecesTotal)).
+
+abc(X) :- boardMidGame(Board), getPiecesCoordinates(Board, 1,1,X,Coords, 0, Pieces), write(Coords),nl,write(Pieces).
 
 a(A,B,Y,Z, Total) :-
     Max is 3,
