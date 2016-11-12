@@ -160,19 +160,18 @@ newVerticalCoord(Line, VertMove, NewLine) :-
 housesAffected([X|Xs], Column, Line, HorMove, VertMove, 0, Affected, Affected) :- write('ola').
 housesAffected([X|Xs], Column, Line, HorMove, VertMove, Amount, Affected, Total) :-
     withinBoard(Column, Line, 9) ->
-        ((getPiece(Column, Line, [X|Xs],Piece) ->
+        (getPiece(Column, Line, [X|Xs],Piece) ->
             ((Affected - 1) >= 0 ->
                 NewAffected is Affected - 1,
-                NewAmount is Amount,
-                write('problema dos parentesis');
+                NewAmount is Amount;
             !,fail)
         ;   NewAmount is Amount - 1,
             NewAffected is Affected),
         %write('yoyoyo' + NewAffected),
         newHorizontalCoord(Column, HorMove, NewColumn),
         newVerticalCoord(Line, VertMove, NewLine),
-        nl, write(NewColumn - NewLine  + 'yayayaya '),write(NewAmount), nl,
-        housesAffected([X|Xs], NewColumn, NewLine, HorMove, VertMove, NewAmount, NewAffected, Total))
+        write(NewColumn - NewLine  + 'yayayaya '),write(NewAmount), nl,
+        housesAffected([X|Xs], NewColumn, NewLine, HorMove, VertMove, NewAmount, NewAffected, Total)
     ;   Total is Affected.
 
 a(A,B,Y,Z, Total) :-
