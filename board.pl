@@ -180,6 +180,30 @@ a(A,B,Y,Z, Total) :-
     housesAffected(X, A, B, Y, Z, 4, 4, InvTotal), write(InvTotal),
     Total is 4 - InvTotal.
 
+moveLine([],_,_,_,_,_).
+moveLine([X|Xs], [N|Ns], InC, DeC, CurrC, Piece) :-
+    (   CurrC == InC -> N = o
+    ;   CurrC == DeC -> N = Piece
+    ;   N = X),
+    NextC is CurrC + 1,
+    moveLine(Xs, Ns, InC, DeC, NextC, Piece).
+
+
+copyLine([], []).
+copyLine([O|Os], [O|Ns]) :- copyLine(Os, Ns).
+
+moveHorAuxiliar(_,_,_,_,0,_,_).
+moveHorAuxiliar([X|Xs], [N|Ns], InC, InL, CurrLine, DeC, Piece) :-
+    (InL == CurrLine ->
+        moveLine(X, N, InC, DeC, 1, Piece)
+    ;   copyLine(X, N)),
+    NextLine is CurrLine - 1,
+    moveHorAuxiliar(Xs, Ns, InC, InL, NextLine, DeC, Piece).
+
+moveHorizontal([X|Xs], [N|Ns], InC, InL, DeC) :-
+    getPiece(InC, InL, [X|Xs], Piece),
+    moveHorAuxiliar([X|Xs], [N|Ns], InC, InL, 9, DeC, Piece).
+
 
 /* Missing Player and [X|Xs] and board size is currently hardcoded */
 verifyMove(InC, InL, DeC, DeL) :-
