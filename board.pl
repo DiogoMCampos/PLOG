@@ -13,9 +13,23 @@ withinBoard(X, Y, Size) :-
     Y > 0,
     Y =< Size.
 
-isOrthogonal(InC, InL, DeC, DeL) :-
-    (InC == DeC, InL \== DeL);
-    (InC \== DeC, InL == DeL).
+isOrthogonal(InC, InL, DeC, DeL, HorMove, VertMove, Amount) :-
+    (InC == DeC ->
+        HorMove is 0,
+        (InL > DeL ->
+            Amount is InL - DeL,
+            VertMove is -1
+        ;InL < DeL ->
+            Amount is DeL - InL,
+            VertMove is 1))
+    ;(InL == DeL ->
+        VertMove is 0,
+        (InC > DeC ->
+            Amount is InC - DeC,
+            HorMove is -1
+        ;InC < DeC ->
+            Amount is DeC - InC,
+            HorMove is 1)).
 
 returnResult(Result, Result).
 
@@ -27,7 +41,7 @@ getListElement(Index, [X|Xs], Iterator, Result) :-
 
 isPiece(piece(_,_)).
 
-getPiece(ColumnIndex, LineIndex, [X|Xs], Piece) :-
+getPiece([X|Xs], ColumnIndex, LineIndex, Piece) :-
     getListElement(10-LineIndex, [X|Xs], 1, Line),
     getListElement(ColumnIndex, Line, 1, Piece),
     isPiece(Piece).
@@ -47,7 +61,7 @@ housesAffected([X|Xs], Column, Line, HorMove, VertMove, Amount, Affected, Total,
     withinBoard(Column, Line, 9) ->
         newHorizontalCoord(Column, HorMove, NewColumn),
         newVerticalCoord(Line, VertMove, NewLine),
-        (getPiece(Column, Line, [X|Xs],_) ->
+        (getPiece([X|Xs], Column, Line, _) ->
             ((Affected - 1) >= 0 ->
                 NewAffected is Affected - 1,
                 NewAmount is Amount,
@@ -68,7 +82,7 @@ getPiecesCoordinates(Board, Column, Line, Side, [PieceCoords|Locals], PiecesLeft
         NewLine is Line),
 
     (Line =< 9 ->
-        (getPiece(Column, Line, Board, Piece) ->
+        (getPiece(Board, Column, Line, Piece) ->
             pieceColor(Piece, Color),
             (Color == Side ->
                 pieceHeight(Piece,Height),
@@ -83,7 +97,7 @@ abc(X) :- boardMidGame(Board), getPiecesCoordinates(Board, 1,1,X,Coords, 0, Piec
 
 a(A,B,Y,Z) :-
     boardStart(X),
-    housesAffected(X, A, B, Y, Z, 4, 4, InvTotal, [Piece|Rest]), reverse(Rest, [_|Real]),write(Real),
+    housesAffected(X, A, B, Y, Z, 3, 4, InvTotal, [_|Rest]), reverse(Rest, [_|Real]),write(Real),
     Total is 4 - InvTotal,
     nl, write(Total).
 
@@ -95,8 +109,8 @@ moveLine([X|Xs], [N|Ns], InC, DeC, CurrC, Piece) :-
     NextC is CurrC + 1,
     moveLine(Xs, Ns, InC, DeC, NextC, Piece).
 
-copyLine([], []).
-copyLine([O|Os], [O|Ns]) :- copyLine(Os, Ns).
+%copyLine([], []).
+%copyLine([O|Os], [O|Ns]) :- copyLine(Os, Ns).
 
 moveHorAuxiliar(_,_,_,_,0,_,_).
 moveHorAuxiliar([X|Xs], [N|Ns], InC, InL, CurrLine, DeC, Piece) :-
@@ -107,7 +121,7 @@ moveHorAuxiliar([X|Xs], [N|Ns], InC, InL, CurrLine, DeC, Piece) :-
     moveHorAuxiliar(Xs, Ns, InC, InL, NextLine, DeC, Piece).
 
 moveHorizontal([X|Xs], [N|Ns], InC, InL, DeC) :-
-    getPiece(InC, InL, [X|Xs], Piece),
+    getPiece([X|Xs], InC, InL, Piece),
     moveHorAuxiliar([X|Xs], [N|Ns], InC, InL, 9, DeC, Piece).
 
 removeFromLine([],_,_,_).
@@ -133,14 +147,18 @@ moveVerAuxiliar([X|Xs], [N|Ns], InC, InL, CurrLine, DeL, Piece) :-
     moveVerAuxiliar(Xs, Ns, InC, InL, NextLine, DeL, Piece).
 
 moveVertical([X|Xs], [N|Ns], InC, InL, DeL) :-
-    getPiece(InC, InL, [X|Xs], Piece),
+    getPiece([X|Xs], InC, InL, Piece),
     moveVerAuxiliar([X|Xs], [N|Ns], InC, InL, 9, DeL, Piece).
 
 /* Missing Player and [X|Xs] and board size is currently hardcoded */
-verifyMove(InC, InL, DeC, DeL) :-
+verifyMove(Board,InC, InL, DeC, DeL, TotalAffected, PiecesAffected) :-
     withinBoard(InC, InL, 9),
     withinBoard(DeC, DeL, 9),
-    isOrthogonal(InC, InL, DeC, DeL).
+    isOrthogonal(InC, InL, DeC, DeL, HorMove, VertMove, Amount),
+    getPiece(Board, InC, InL, Piece),
+    pieceHeight(Piece, Height),
+    housesAffected(Board, InC, InL, HorMove, VertMove, Amount, Height + 1, InverseTotal, PiecesAffected),
+    TotalAffected is Height + 1 -InverseTotal.
 
 %move([X|Xs], InC, InL, DeC, DeL).
 %finish(X).
@@ -157,10 +175,12 @@ analyseMove([X|Xs], Player) :-
 %    verifyMove([X|Xs], InC, InL, DeC, DeL, P).
 
 play(X, Player, OtherPlayer) :-
-    analyseMove(X, Player),
-    move(InC, InL, DeC, DeL),
-    finish(X),
-    play(X, OtherPlayer, Player).
+    (analyseMove(X, Player) ->
+        move(InC, InL, DeC, DeL),
+        finish(X) ->
+            write('acabou')
+        ;   play(X, OtherPlayer, Player)
+    ;   play(X, OtherPlayer, Player)).
 
 game(X) :-
     setupGame(X, 9),
