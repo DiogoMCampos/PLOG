@@ -151,11 +151,13 @@ moveVertical([X|Xs], [N|Ns], InC, InL, DeL) :-
     moveVerAuxiliar([X|Xs], [N|Ns], InC, InL, 9, DeL, Piece).
 
 /* Missing Player and [X|Xs] and board size is currently hardcoded */
-verifyMove(Board,InC, InL, DeC, DeL, TotalAffected, PiecesAffected) :-
+verifyMove(Board,InC, InL, DeC, DeL, Player, TotalAffected, PiecesAffected) :-
     withinBoard(InC, InL, 9),
     withinBoard(DeC, DeL, 9),
     isOrthogonal(InC, InL, DeC, DeL, HorMove, VertMove, Amount),
     getPiece(Board, InC, InL, Piece),
+    pieceColor(Piece, Color),
+    Color == Player,
     pieceHeight(Piece, Height),
     housesAffected(Board, InC, InL, HorMove, VertMove, Amount, Height + 1, InverseTotal, PiecesAffected),
     TotalAffected is Height + 1 -InverseTotal.
@@ -163,12 +165,12 @@ verifyMove(Board,InC, InL, DeC, DeL, TotalAffected, PiecesAffected) :-
 %move([X|Xs], InC, InL, DeC, DeL).
 %finish(X).
 
-analyseMove([X|Xs], Player) :-
+analyseMove(Board, Player) :-
     askMove(InC, InL, DeC, DeL),
     letters(A),
     convertLetterToIndex(InC, A, 1, InColInd),
     convertLetterToIndex(DeC, A, 1, DeColInd),
-    verifyMove(InColInd, InL, DeColInd, DeL).
+    verifyMove(Board, InColInd, InL, DeColInd, DeL, Player, TotalAffected, PiecesAffected).
 
 %analyseMove([X|Xs], Player) :-
 %    askMove([X|Xs], InC, InL, DeC, DeL),
@@ -184,4 +186,13 @@ play(X, Player, OtherPlayer) :-
 
 game(X) :-
     setupGame(X, 9),
-    play(X, a, b).
+    play(X, w, r).
+
+oshi :-
+    displayMenu,
+    navigatingMenu(Choice),
+    (Choice == 1 -> game(X), oshi
+    ;Choice == 2 -> game(X), oshi
+    ;Choice == 3 -> displayRules, oshi
+    ;Choice == 4 -> write('Exiting Oshi. Hope you enjoyed yourself.\n\n')
+    ;oshi).

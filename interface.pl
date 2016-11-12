@@ -51,7 +51,7 @@ translate(piece(r, 3)) :- write('X').
 translate(piece(r, 2)) :- write('x').
 translate(piece(r, 1)) :- write('*').
 
-displayCol(_, 0).
+displayCol(_, 0) :- nl.
 displayCol([X|Xs], I) :-
     Next is I-1,
     write('  '),
@@ -114,3 +114,25 @@ askMove(InC, InL, DeC, DeL) :-
     nl,
     read(Dest),
     atom_chars(Dest, [DeC|[DeL|Rest]]).
+
+navigatingMenu(Choice) :-
+    read(Choice),
+    integer(Choice).
+
+displayRules:-
+    write('In Oshi the goal is to knock the opponents piece\'s off the board.\n'),
+    write('The first player to take out 7 points worth of pieces wins.\n'),
+    write('Each piece\'s points corresponds to the number of floors it contains.\n'),
+    write('Each side has 2 pieces of 3 floors, 2 of 2 floors and 4 pieces of 1 floor.\n'),
+    write('A player can only move one piece per turn. It must be horizontal or vertical but not both.\n'),
+    write('The piece can move a maximum of houses equal to its number of floors.\n'),
+    write('You can push your opponent\'s pieces, or a combination of both.\n'),
+    write('Each time you push one of your opponent\'s pieces off the board, you claim it and place it off to the side of your side of the game board.\n'),
+    write('If you push a combination of your pieces and your opponent\'s pieces off the board, \nyou claim you opponent\'s pieces and he or she claims yours.\n'),
+    write('Each piece can push a number of other pieces equal to its number of floors.\n'),
+    write('\n').
+
+displayMenu:-
+    write('\nWelcome to Oshi'), nl,
+    write('Please select one of the options from 1 to 4'),nl,nl,
+    write('1. VS Computer          2. VS Player         3. Rules            4. Exit\n\n').
