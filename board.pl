@@ -160,18 +160,20 @@ newVerticalCoord(Line, VertMove, NewLine) :-
 
 
 housesAffected([X|Xs], Column, Line, HorMove, VertMove, 0, Affected, Affected) :- write('ola').
-housesAffected([X|Xs], Column, Line, HorMove, VertMove, Amount, Affected, Total) :-
+housesAffected([X|Xs], Column, Line, HorMove, VertMove, Amount, Affected, Total, [Pieces|Rest]) :-
     withinBoard(Column, Line, 9) ->
-        (getPiece(Column, Line, [X|Xs],Piece) ->
-            ((Affected - 1) >= 0 ->
-                NewAffected is Affected - 1,
-                NewAmount is Amount;
-            !,fail)
-        ;   NewAmount is Amount - 1,
-            NewAffected is Affected),
         newHorizontalCoord(Column, HorMove, NewColumn),
         newVerticalCoord(Line, VertMove, NewLine),
-        housesAffected([X|Xs], NewColumn, NewLine, HorMove, VertMove, NewAmount, NewAffected, Total)
+        (getPiece(Column, Line, [X|Xs],_) ->
+            ((Affected - 1) >= 0 ->
+                NewAffected is Affected - 1,
+                NewAmount is Amount,
+                returnResult(Pieces, Column-Line-Amount),
+                housesAffected([X|Xs], NewColumn, NewLine, HorMove, VertMove, NewAmount, NewAffected, Total, Rest)
+            ;!,fail)
+        ;   NewAmount is Amount - 1,
+            NewAffected is Affected,
+            housesAffected([X|Xs], NewColumn, NewLine, HorMove, VertMove, NewAmount, NewAffected, Total, [Pieces|Rest]))
     ;   Total is Affected.
 
 /* Saves all pieces coordinates from one player still in the game in a list. Returns num remaining pieces too*/
@@ -196,12 +198,11 @@ getPiecesCoordinates(Board, Column, Line, Side, [PieceCoords|Locals], PiecesLeft
 
 abc(X) :- boardMidGame(Board), getPiecesCoordinates(Board, 1,1,X,Coords, 0, Pieces), write(Coords),nl,write(Pieces).
 
-a(A,B,Y,Z, Total) :-
-    Max is 3,
+a(A,B,Y,Z) :-
     boardStart(X),
-    housesAffected(X, A, B, Y, Z, 4, 4, InvTotal), write(InvTotal),
-    Total is 4 - InvTotal.
-
+    housesAffected(X, A, B, Y, Z, 4, 4, InvTotal, Pieces), write(Pieces),
+    Total is 4 - InvTotal,
+    nl, write(Total).
 
 moveLine([],_,_,_,_,_).
 moveLine([X|Xs], [N|Ns], InC, DeC, CurrC, Piece) :-
@@ -219,7 +220,7 @@ moveHorAuxiliar(_,_,_,_,0,_,_).
 moveHorAuxiliar([X|Xs], [N|Ns], InC, InL, CurrLine, DeC, Piece) :-
     (InL == CurrLine ->
         moveLine(X, N, InC, DeC, 1, Piece)
-    ;   copyLine(X, N)),
+    ;   returnResult(X, N)),
     NextLine is CurrLine - 1,
     moveHorAuxiliar(Xs, Ns, InC, InL, NextLine, DeC, Piece).
 
