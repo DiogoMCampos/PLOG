@@ -83,7 +83,7 @@ abc(X) :- boardMidGame(Board), getPiecesCoordinates(Board, 1,1,X,Coords, 0, Piec
 
 a(A,B,Y,Z) :-
     boardStart(X),
-    housesAffected(X, A, B, Y, Z, 4, 4, InvTotal, Pieces), reverse(Pieces, [_|Real]),write(Real),
+    housesAffected(X, A, B, Y, Z, 4, 4, InvTotal, [Piece|Rest]), reverse(Rest, [_|Real]),write(Real),
     Total is 4 - InvTotal,
     nl, write(Total).
 
