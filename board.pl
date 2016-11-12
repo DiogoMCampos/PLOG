@@ -158,7 +158,6 @@ newVerticalCoord(Line, VertMove, NewLine) :-
     (VertMove < 0 -> NewLine is Line-1);
     (VertMove == 0 ->NewLine is Line).
 
-
 housesAffected([X|Xs], Column, Line, HorMove, VertMove, 0, Affected, Affected) :- write('ola').
 housesAffected([X|Xs], Column, Line, HorMove, VertMove, Amount, Affected, Total, [Pieces|Rest]) :-
     withinBoard(Column, Line, 9) ->
@@ -212,13 +211,12 @@ moveLine([X|Xs], [N|Ns], InC, DeC, CurrC, Piece) :-
     NextC is CurrC + 1,
     moveLine(Xs, Ns, InC, DeC, NextC, Piece).
 
-
 copyLine([], []).
 copyLine([O|Os], [O|Ns]) :- copyLine(Os, Ns).
 
 moveHorAuxiliar(_,_,_,_,0,_,_).
 moveHorAuxiliar([X|Xs], [N|Ns], InC, InL, CurrLine, DeC, Piece) :-
-    (InL == CurrLine ->
+    (CurrLine == InL ->
         moveLine(X, N, InC, DeC, 1, Piece)
     ;   returnResult(X, N)),
     NextLine is CurrLine - 1,
@@ -227,6 +225,32 @@ moveHorAuxiliar([X|Xs], [N|Ns], InC, InL, CurrLine, DeC, Piece) :-
 moveHorizontal([X|Xs], [N|Ns], InC, InL, DeC) :-
     getPiece(InC, InL, [X|Xs], Piece),
     moveHorAuxiliar([X|Xs], [N|Ns], InC, InL, 9, DeC, Piece).
+
+removeFromLine([],_,_,_).
+removeFromLine([X|Xs], [N|Ns], InC, CurrC) :-
+    (   CurrC == InC -> N = o
+    ;   N = X),
+    NextC is CurrC + 1,
+    removeFromLine(Xs, Ns, InC, NextC).
+
+addToLine([],_,_,_,_).
+addToLine([X|Xs], [N|Ns], DeC, CurrC, Piece) :-
+    (   CurrC == DeC -> N = Piece
+    ;   N = X),
+    NextC is CurrC + 1,
+    addToLine(Xs, Ns, DeC, NextC, Piece).
+
+moveVerAuxiliar(_,_,_,_,0,_,_).
+moveVerAuxiliar([X|Xs], [N|Ns], InC, InL, CurrLine, DeL, Piece) :-
+    (   CurrLine == InL -> removeFromLine(X, N, InC, 1)
+    ;   CurrLine == DeL -> addToLine(X, N, InC, 1, Piece)
+    ;   returnResult(X, N)),
+    NextLine is CurrLine - 1,
+    moveVerAuxiliar(Xs, Ns, InC, InL, NextLine, DeL, Piece).
+
+moveVertical([X|Xs], [N|Ns], InC, InL, DeL) :-
+    getPiece(InC, InL, [X|Xs], Piece),
+    moveVerAuxiliar([X|Xs], [N|Ns], InC, InL, 9, DeL, Piece).
 
 /* Missing Player and [X|Xs] and board size is currently hardcoded */
 verifyMove(InC, InL, DeC, DeL) :-
