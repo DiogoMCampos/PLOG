@@ -172,9 +172,7 @@ moveHorAuxiliar([X|Xs], [N|Ns], MovePairs, MoveLine, CurrLine, Direction, Remove
 moveHorizontal([X|Xs], [N|Ns], MoveList, Direction, Removed) :-
     createMovementPairs(MoveList, Pairs),
     getMoveLine(MoveList, MoveLine),
-    (Direction > 0 ->
-        moveHorAuxiliar([X|Xs], [N|Ns], Pairs, MoveLine, 9, Direction, MovedList)
-    ;   moveHorAuxiliar([X|Xs], [N|Ns], Pairs, MoveLine, 9, Direction, MovedList)),
+    moveHorAuxiliar([X|Xs], [N|Ns], Pairs, MoveLine, 9, Direction, MovedList),
     getOutsideBoard(MovedList, Outside), reverse(Outside, [_|Removed]).
 
 test(NewLine, Removed, List) :-
