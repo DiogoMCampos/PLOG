@@ -107,11 +107,15 @@ addToList(Element, List, [Element|List]).
 getOutsideBoard([], _).
 getOutsideBoard([Pair|PairRest], [Removed|RemovedRest]) :-
     getFirstValuePair(Pair, Place),
-    Place > 9 ->
+    (Place > 9 ->
         getSecondValuePair(Pair, Piece),
         Removed = Piece,
         getOutsideBoard(PairRest, RemovedRest)
-    ;   getOutsideBoard(PairRest, [Removed|RemovedRest]).
+    ;   (Place < 1 ->
+            getSecondValuePair(Pair, Piece),
+            Removed = Piece,
+            getOutsideBoard(PairRest, RemovedRest)))
+    ;  getOutsideBoard(PairRest, [Removed|RemovedRest]).
 
 createHorOriginPair(Column-_-Amount, Column-Amount).
 createVerOriginPair(_-Line-Amount, Line-Amount).
@@ -180,24 +184,19 @@ moveHorizontal(X, N, MoveList, Direction, Removed) :-
     moveHorAuxiliar(X, N, Pairs, MoveLine, 9, Direction, MovedList),
     getOutsideBoard(MovedList, Outside), reverse(Outside, [_|Removed]).
 
-moveLineVertical([],_,_,_,_,_,_,Pieces,Pieces,_).
-moveLineVertical([X|Xs], [N|Ns], CurrC, CurrL, MoveColumn, Direction, PiecesToMove, Pieces, NewPieces, Removed) :-
+moveLineVertical([],_,_,_,_,_,_,Pieces,Pieces).
+moveLineVertical([X|Xs], [N|Ns], CurrC, CurrL, MoveColumn, Direction, PiecesToMove, Pieces, NewPieces) :-
     (CurrC =\= MoveColumn ->
         N = X,
         NextPieces = Pieces
     ;   deletePieces(X, CurrL, Direction, PiecesToMove, Pieces, NextPieces, Deleted),
-        write('Pieces: '), write(Pieces), write(' - Next Pieces: '), write(NextPieces), nl,
         addPieces(X, N, CurrL, NextPieces, Deleted)),
-    write('Ainda Next Pieces: '), write(NextPieces), nl,
     NextC is CurrC + 1,
-    write('XS: '), write(Xs), nl,
-    write(NewPieces), nl, write(NextPieces), nl,
-    moveLineVertical(Xs, Ns, NextC, CurrL, MoveColumn, Direction, PiecesToMove, NextPieces, NewPieces, Removed).
+    moveLineVertical(Xs, Ns, NextC, CurrL, MoveColumn, Direction, PiecesToMove, NextPieces, NewPieces).
 
-moveVerAuxiliar([],_,_,_,_,_,_,_).
+moveVerAuxiliar([],_,_,_,_,_,Pieces, Pieces).
 moveVerAuxiliar([X|Xs], [N|Ns], MovePairs, MoveColumn, CurrLine, Direction, Pieces, Removed) :-
-    write('Current Line: '), write(CurrLine), nl,
-    moveLineVertical(X, N, 1, CurrLine, MoveColumn, Direction, MovePairs, Pieces, NewPieces, Removed),
+    moveLineVertical(X, N, 1, CurrLine, MoveColumn, Direction, MovePairs, Pieces, NewPieces),
     (Direction > 0 ->
         NextLine is CurrLine + 1
     ;   NextLine is CurrLine - 1),
@@ -208,9 +207,11 @@ moveVertical(X, N, MoveList, Direction, Removed) :-
     getMoveColumn(MoveList, MoveColumn),
     (Direction > 0 ->
         reverse(X, TempX),
-        moveVerAuxiliar(TempX, TempN, Pairs, MoveColumn, 1, Direction, [], Removed),
-        reverse(TempN, N)
-    ;   moveVerAuxiliar(X, N, Pairs, MoveColumn, 9, Direction, [], Removed)).
+        moveVerAuxiliar(TempX, TempN, Pairs, MoveColumn, 1, Direction, [], MovedList),
+        reverse(TempN, N),
+        getOutsideBoard(MovedList, Outside), reverse(Outside, [_|Removed])
+    ;   moveVerAuxiliar(X, N, Pairs, MoveColumn, 9, Direction, [], MovedList)),
+        getOutsideBoard(MovedList, Outside), reverse(Outside, [_|Removed]).
 
 test(NewLine, Removed, List) :-
     boardStart(X),
@@ -223,11 +224,12 @@ test(NewLine, Removed, List) :-
     displayLine(NewLine, 9, 9).
 
 moveList([5-3-2, 5-2-2]).
+moveList2([5-8-3, 6-8-3, 7-8-3]).
 
 test2(Removed) :-
     boardStart(X),
-    moveList(Y),
-    moveHorizontal(X, N, Y, -1, Removed),
+    moveList2(Y),
+    moveHorizontal(X, N, Y, 1, Removed),
     displayBoard(N, 9, 9).
 
 test3(Removed) :-
