@@ -2,6 +2,9 @@
 :-use_module(library(random)).
 :-include('interface.pl').
 
+boardSize(9).
+boardStartIndex(1).
+
 convertLetterToIndex(Column, [X|Xs], Index, Result) :-
     Column \== X ->
         NewIndex is Index+1,
@@ -55,7 +58,8 @@ pushOpponents([_-_-Color-_|Rest],  Player) :-
 
 housesAffected(_, _, _, _, _, 0, Affected, Affected, _).
 housesAffected([X|Xs], Column, Line, HorMove, VertMove, Amount, Affected, Total, [Pieces|Rest]) :-
-    withinBoard(Column, Line, 9) ->
+    boardSize(Size),
+    withinBoard(Column, Line, Size) ->
         NewColumn is Column + HorMove * Amount,
         NewLine is Line + VertMove * Amount,
         (getPiece([X|Xs], Column, Line, Object) ->
@@ -73,13 +77,14 @@ housesAffected([X|Xs], Column, Line, HorMove, VertMove, Amount, Affected, Total,
 
 /* Saves all pieces coordinates from one player still in the game in a list. Returns num remaining pieces too*/
 getPiecesCoordinates(Board, Column, Line, Side, [PieceCoords|Locals], PiecesLeft, PiecesTotal) :-
-    (Column + 1 > 9 ->
+    boardSize(Size),
+    (Column + 1 > Size ->
         NewCol is 1,
         NewLine is Line + 1
     ;   NewCol is Column + 1,
         NewLine is Line),
 
-    (Line =< 9 ->
+    (Line =< Size ->
         (getPiece(Board, Column, Line, Piece) ->
             pieceColor(Piece, Color),
             (Color == Side ->
@@ -204,19 +209,22 @@ moveVertical([X|Xs], [N|Ns], InC, InL, DeL) :-
 
 /* Missing Player and [X|Xs] and board size is currently hardcoded */
 verifyMove(Board,InC, InL, DeC, DeL, Player, TotalAffected, PiecesAffected) :-
-    withinBoard(InC, InL, 9),
-    withinBoard(DeC, DeL, 9),
+    boardSize(Size),
+    withinBoard(InC, InL, Size),
+    withinBoard(DeC, DeL, Size),
     isOrthogonal(InC, InL, DeC, DeL, HorMove, VertMove, Amount),
     getPiece(Board, InC, InL, Piece),
     pieceColor(Piece, Color),
     Color == Player,
     pieceHeight(Piece, Height),
-    housesAffected(Board, InC, InL, HorMove, VertMove, Amount, Height + 1, InverseTotal, PiecesAffected),
-    reverse(PiecesAffected, [_|InvertedAffected]),!,
-    pushOpponents(InvertedAffected, Player),
-    TotalAffected is Height + 1 -InverseTotal.
+    Height >= Amount,
+    housesAffected(Board, InC, InL, HorMove, VertMove, Amount, Height + 1, InverseTotal, InvertedAffected),
+    reverse(InvertedAffected, [_|PiecesAffected]),!,
+    TotalAffected is Height + 1 -InverseTotal,
+    (TotalAffected == 1 -> true
+    ;pushOpponents(PiecesAffected, Player)).
 
-ab(X,Y,X1,Y1) :- boardMidGame(Board), verifyMove(Board, X,Y,X1,Y1, r,_,_).
+ab(X,Y,X1,Y1, Side) :- boardMidGame(Board), verifyMove(Board, X,Y,X1,Y1, Side,A,B), write(A),nl,write(B).
 %move([X|Xs], InC, InL, DeC, DeL).
 %finish(X).
 
@@ -228,13 +236,14 @@ listPossible(Column, Line, HorMove, VertMove, Amount, [Move|Rest]) :-
         DestLin is Line + VertMove * Amount,
         returnResult(Column-Line-DestCol-DestLin, Move),
         listPossible(Column, Line, HorMove, VertMove, NewAmount, Rest)
-    ;   write('').
+    ;   true.
 
 getPossibleDirection(_, _, _, _, _, 0, _, Total, Moves) :- Total is 0, returnResult(Moves, []).
 getPossibleDirection(Board, Column, Line, HorMove, VertMove, Amount, Affected, Total, Moves) :-
     DestCol is Column + (HorMove * Amount),
     DestLin is Line + (VertMove * Amount),
-    ((withinBoard(DestCol, DestLin, 9),
+    boardSize(Size),
+    ((withinBoard(DestCol, DestLin, Size),
     housesAffected(Board, Column, Line, HorMove, VertMove, Amount, Affected, _, _)) ->
         Total is Amount,
         listPossible(Column, Line, HorMove, VertMove, Amount, Moves)
@@ -277,8 +286,8 @@ d(X, InC, InL, DeC, DeL) :- boardStart(Z), generateRandomMove(Z, X, InC, InL, De
 
 generateRandomMove(Board, Side, InC, InL, DeC, DeL) :-
     allPossibleMoves(Board, Side, NumMoves,AllMoves),
-    random(0, NumMoves, Option),
-    write(NumMoves+Option),nl,!,
+    random(0, NumMoves, Option),!,
+    write(NumMoves+Option),nl,
     write(AllMoves),
     getListElement(Option, AllMoves, 0, InC-InL-DeC-DeL),
     write(InC+InL+DeC+DeL), nl.
@@ -289,6 +298,16 @@ analyseMove(Board, Player) :-
     convertLetterToIndex(InC, A, 1, InColInd),
     convertLetterToIndex(DeC, A, 1, DeColInd),
     verifyMove(Board, InColInd, InL, DeColInd, DeL, Player, TotalAffected, PiecesAffected).
+
+finish(_-P1Points,_-P2Points,[], P1Points, P2Points) :- P1Points >= 7, P2Points >=7.
+finish(P1Color-P1Points, P2Color-P2Points, [Removed|Rest], NewP1Points, NewP2Points) :-
+    pieceColor(Removed,Color),
+    pieceHeight(Removed,Height).
+    (Color == P1Color ->
+        NewPoints is P1Points+Height,
+        finish(P1Color-NewPoints, P2Color-P2Points, Rest, NewP1Points, NewP2Points),
+    ;   NewPoints is P2Points+Height,
+        finish(P1Color-P1Points, P2Color-NewPoints, Rest, NewP1Points, NewP2Points).
 
 vsComputer(Board, Player, Computer):-
     (analyseMove(Board, Player) ->
@@ -305,14 +324,15 @@ vsComputer(Board, Player, Computer):-
 vsHuman(Board, Player, OtherPlayer) :-
     (analyseMove(Board, Player) ->
         move(InC, InL, DeC, DeL),
-        finish(Board) ->
+        finish(Player, OtherPlayer, Removed) ->
             displayGameOver
         ;   vsHuman(Board, OtherPlayer, Player)
     ;   vsHuman(Board, Player, OtherPlayer)).
 
 game(Board) :-
-    setupGame(Board, 9),
-    vsHuman(Board, w, r).
+    boardSize(Size),
+    setupGame(Board, Size),
+    vsHuman(Board, w-0, r-0).
 
 oshi :-
     displayMenu,
