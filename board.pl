@@ -2,6 +2,7 @@
 :-use_module(library(random)).
 :-include('interface.pl').
 :-include('utilities.pl').
+:-include('movement.pl').
 
 boardStartIndex(1).
 
@@ -55,120 +56,6 @@ getPiecesCoordinates(Board, Column, Line, Side, [PieceCoords|Locals], PiecesLeft
         ;   getPiecesCoordinates(Board, NewCol, NewLine, Side, [PieceCoords|Locals], PiecesLeft, PiecesTotal))
     ;   returnResult(PiecesLeft, PiecesTotal)).
 
-
-getOutsideBoard([], _).
-getOutsideBoard([Pair|PairRest], [Removed|RemovedRest]) :-
-    getFirstValuePair(Pair, Place),
-    (Place > 9 ->
-        getSecondValuePair(Pair, Piece),
-        Removed = Piece,
-        getOutsideBoard(PairRest, RemovedRest)
-    ;   (Place < 1 ->
-            getSecondValuePair(Pair, Piece),
-            Removed = Piece,
-            getOutsideBoard(PairRest, RemovedRest)))
-    ;  getOutsideBoard(PairRest, [Removed|RemovedRest]).
-
-createHorOriginPair(Column-_-_-Amount, Column-Amount).
-createVerOriginPair(_-Line-_-Amount, Line-Amount).
-createDestPair(Column-Piece, Column, Piece).
-
-createHorizontalPairs([],[]).
-createHorizontalPairs([Move|Rest], [P|Ps]) :-
-    createHorOriginPair(Move, P),
-    createHorizontalPairs(Rest, Ps).
-
-createVerticalPairs([],[]).
-createVerticalPairs([Move|Rest], [P|Ps]) :-
-    createVerOriginPair(Move, P),
-    createVerticalPairs(Rest, Ps).
-
-getMoveLine([_-Line-_-_|_], Line).
-getMoveColumn([Column-_-_-_|_], Column).
-
-deletePieces(_, _, _, [], Pieces, Pieces, 0).
-deletePieces(X, Comparable, Direction, [Piece|Rest], Pieces, NewPieces, Deleted) :-
-    getFirstValuePair(Piece, Value),
-    Comparable == Value ->
-        getSecondValuePair(Piece, Amount),
-        (Direction > 0 ->
-            Dest is Value + Amount
-        ;   Dest is Value - Amount),
-        createDestPair(Pair, Dest, X),
-        addToList(Pair, Pieces, NewPieces),
-        Deleted is 1
-    ;   deletePieces(X, Comparable, Direction, Rest, Pieces, NewPieces, Deleted).
-
-addPieces(_, o, _, [], 1).
-addPieces(X, X, _, [], 0).
-addPieces(X, N, Comparable, [Piece|Rest], Deleted) :-
-    getFirstValuePair(Piece, Value),
-    Comparable == Value ->
-        getSecondValuePair(Piece, Object),
-        N = Object
-    ;   addPieces(X, N, Comparable, Rest, Deleted).
-
-moveLineHorizontal([],_,_,_,_, Pieces, Pieces).
-moveLineHorizontal([X|Xs], [N|Ns], CurrC, Direction, PiecesToMove, Pieces, Removed) :-
-    deletePieces(X, CurrC, Direction, PiecesToMove, Pieces, NewPieces, Deleted),
-    addPieces(X, N, CurrC, NewPieces, Deleted),
-    (Direction > 0 ->
-        NextC is CurrC + 1
-    ;   NextC is CurrC - 1),
-    moveLineHorizontal(Xs, Ns, NextC, Direction, PiecesToMove, NewPieces, Removed).
-
-moveHorAuxiliar(_,_,_,_,0,_,_).
-moveHorAuxiliar([X|Xs], [N|Ns], MovePairs, MoveLine, CurrLine, Direction, Removed) :-
-    (CurrLine == MoveLine ->
-        (Direction > 0 ->
-            moveLineHorizontal(X, N, 1, Direction, MovePairs, [], Removed)
-        ;   reverse(X, TempLine),
-            moveLineHorizontal(TempLine, TempN, 9, Direction, MovePairs, [], Removed),
-            reverse(TempN, N))
-    ;   returnResult(X, N)),
-    NextLine is CurrLine - 1,
-    moveHorAuxiliar(Xs, Ns, MovePairs, MoveLine, NextLine, Direction, Removed).
-
-moveHorizontal(X, N, MoveList, Direction, Removed) :-
-    createHorizontalPairs(MoveList, Pairs),
-    getMoveLine(MoveList, MoveLine),
-    moveHorAuxiliar(X, N, Pairs, MoveLine, 9, Direction, MovedList),
-    getOutsideBoard(MovedList, Outside), reverse(Outside, [_|Removed]).
-
-moveLineVertical([],_,_,_,_,_,_,Pieces,Pieces).
-moveLineVertical([X|Xs], [N|Ns], CurrC, CurrL, MoveColumn, Direction, PiecesToMove, Pieces, NewPieces) :-
-    (CurrC =\= MoveColumn ->
-        N = X,
-        NextPieces = Pieces
-    ;   deletePieces(X, CurrL, Direction, PiecesToMove, Pieces, NextPieces, Deleted),
-        addPieces(X, N, CurrL, NextPieces, Deleted)),
-    NextC is CurrC + 1,
-    moveLineVertical(Xs, Ns, NextC, CurrL, MoveColumn, Direction, PiecesToMove, NextPieces, NewPieces).
-
-moveVerAuxiliar([],_,_,_,_,_,Pieces, Pieces).
-moveVerAuxiliar([X|Xs], [N|Ns], MovePairs, MoveColumn, CurrLine, Direction, Pieces, Removed) :-
-    moveLineVertical(X, N, 1, CurrLine, MoveColumn, Direction, MovePairs, Pieces, NewPieces),
-    (Direction > 0 ->
-        NextLine is CurrLine + 1
-    ;   NextLine is CurrLine - 1),
-    moveVerAuxiliar(Xs, Ns, MovePairs, MoveColumn, NextLine, Direction, NewPieces, Removed).
-
-moveVertical(X, N, MoveList, Direction, Removed) :-
-    createVerticalPairs(MoveList, Pairs),
-    getMoveColumn(MoveList, MoveColumn),
-    (Direction > 0 ->
-        reverse(X, TempX),
-        moveVerAuxiliar(TempX, TempN, Pairs, MoveColumn, 1, Direction, [], MovedList),
-        reverse(TempN, N),
-        getOutsideBoard(MovedList, Outside), reverse(Outside, [_|Removed])
-    ;   moveVerAuxiliar(X, N, Pairs, MoveColumn, 9, Direction, [], MovedList)),
-        getOutsideBoard(MovedList, Outside), reverse(Outside, [_|Removed]).
-
-move(Board, NewBoard, HorMove, VertMove, PiecesToMove, PiecesRemoved) :-
-    HorMove == 0 ->
-        moveVertical(Board, NewBoard, PiecesToMove, VertMove, PiecesRemoved)
-    ;   moveHorizontal(Board, NewBoard, PiecesToMove, HorMove, PiecesRemoved).
-
 verifyMove(Board,InC, InL, DeC, DeL, HorMove, VertMove, Player, PiecesAffected) :-
     boardSize(Size),
     withinBoard(InC, InL, Size),
@@ -199,7 +86,7 @@ getPossibleDirection(_, _, _, _, _, 0,_, Total, Moves) :- Total is 0, returnResu
 getPossibleDirection(Board, Column, Line, HorMove, VertMove, Amount, PieceColor, Total, Moves) :-
     DestCol is Column + (HorMove * Amount),
     DestLin is Line + (VertMove * Amount),
-    NewAmount is Amount-1,
+    NewAmount is Amount - 1,
     (verifyMove(Board,Column,Line, DestCol, DestLin, _,_, PieceColor,_) ->
         Total is Amount,
         listPossible(Column, Line, HorMove, VertMove, Amount, Moves)
@@ -245,11 +132,11 @@ allPossibleMoves(Board, Side, Total, Moves) :-
     listAllMoves(Board, Coords, 0, Total, [], Moves).
 
 generateRandomMove(Board, Side, InC, InL, DeC, DeL) :-
-    allPossibleMoves(Board, Side, NumMoves,AllMoves),
+    allPossibleMoves(Board, Side, NumMoves, AllMoves),
     random(0, NumMoves, Option),!,
     getListElement(Option, AllMoves, 0, InC-InL-DeC-DeL).
 
-getComputerMove(Board,Color,HorMove, VertMove, PiecesToMove):-
+getComputerMove(Board, Color, HorMove, VertMove, PiecesToMove):-
     generateRandomMove(Board, Color, InC, InL, DeC, DeL),
     isOrthogonal(InC, InL, DeC, DeL, HorMove, VertMove, Amount),
     getPiece(Board, InC, InL, Piece),
@@ -278,7 +165,7 @@ updatePoints(P1Color-P1Points, P2Color-P2Points, [Removed|Rest], NewP1Points, Ne
 finish(_-P1Points, _-P2Points) :-
     (P1Points >= 7; P2Points >= 7) ->
         true
-    ;fail.
+    ;   fail.
 
 vsComputer(Board, P1Color-P1Points,ComColor-ComPoints):-
     (analyseMove(Board, P1Color, HorMove, VertMove, PiecesToMove) ->

@@ -109,12 +109,12 @@ end(X) :-
 
 askPlayerMove(InC, InL, DeC, DeL) :-
     flush_output,
-    write('Coordinates of the piece to move (ex: \'d3\'.)'),
+    write('Coordinates of the piece to move (ex: \'D3\'.)'),
     nl,
     read(Input),
     atom_chars(Input, [InC|InLString]),
     number_chars(InL, InLString),
-    write('Coordinates of the pieces destination (ex: \'f3\'.)'),
+    write('Coordinates of the pieces destination (ex: \'F3\'.)'),
     nl,
     read(Dest),
     atom_chars(Dest, [DeC|DeLString]),
