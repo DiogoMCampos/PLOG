@@ -60,8 +60,8 @@ housesAffected(_, _, _, _, _, 0, Affected, Affected, _).
 housesAffected([X|Xs], Column, Line, HorMove, VertMove, Amount, Affected, Total, [Pieces|Rest]) :-
     boardSize(Size),
     withinBoard(Column, Line, Size) ->
-        NewColumn is Column + HorMove * Amount,
-        NewLine is Line + VertMove * Amount,
+        NewColumn is Column + HorMove,
+        NewLine is Line + VertMove,
         (getPiece([X|Xs], Column, Line, Object) ->
             ((Affected - 1) >= 0 ->
                 NewAffected is Affected - 1,
@@ -122,8 +122,8 @@ getOutsideBoard([Pair|PairRest], [Removed|RemovedRest]) :-
             getOutsideBoard(PairRest, RemovedRest)))
     ;  getOutsideBoard(PairRest, [Removed|RemovedRest]).
 
-createHorOriginPair(Column-_-Amount, Column-Amount).
-createVerOriginPair(_-Line-Amount, Line-Amount).
+createHorOriginPair(Column-_-_-Amount, Column-Amount).
+createVerOriginPair(_-Line-_-Amount, Line-Amount).
 createDestPair(Column-Piece, Column, Piece).
 
 createHorizontalPairs([],[]).
@@ -136,8 +136,8 @@ createVerticalPairs([Move|Rest], [P|Ps]) :-
     createVerOriginPair(Move, P),
     createVerticalPairs(Rest, Ps).
 
-getMoveLine([_-Line-_|_], Line).
-getMoveColumn([Column-_-_|_], Column).
+getMoveLine([_-Line-_-_|_], Line).
+getMoveColumn([Column-_-_-_|_], Column).
 
 deletePieces(_, _, _, [], Pieces, Pieces, 0).
 deletePieces(X, Comparable, Direction, [Piece|Rest], Pieces, NewPieces, Deleted) :-
@@ -222,7 +222,7 @@ move(Board, NewBoard, HorMove, VertMove, PiecesToMove, PiecesRemoved) :-
         moveVertical(Board, NewBoard, PiecesToMove, VertMove, PiecesRemoved)
     ;   moveHorizontal(Board, NewBoard, PiecesToMove, HorMove, PiecesRemoved).
 
-moveList([5-3-2, 5-2-2]).
+moveList([5-3-w-2, 5-2-w-2]).
 moveList2([4-8-4, 5-8-4, 6-8-4, 7-8-4]).
 
 test(Removed) :-
@@ -244,10 +244,6 @@ moveVerAuxiliar([X|Xs], [N|Ns], InC, InL, CurrLine, DeL, Piece) :-
     ;   returnResult(X, N)),
     NextLine is CurrLine - 1,
 moveVerAuxiliar(Xs, Ns, InC, InL, NextLine, DeL, Piece).
-
-moveVertical([X|Xs], [N|Ns], InC, InL, DeL) :-
-    getPiece([X|Xs], InC, InL, Piece),
-    moveVerAuxiliar([X|Xs], [N|Ns], InC, InL, 9, DeL, Piece).
 
 /* Missing Player and [X|Xs] and board size is currently hardcoded */
 verifyMove(Board,InC, InL, DeC, DeL, HorMove, VertMove, Player, PiecesAffected) :-
@@ -277,29 +273,29 @@ listPossible(Column, Line, HorMove, VertMove, Amount, [Move|Rest]) :-
         listPossible(Column, Line, HorMove, VertMove, NewAmount, Rest)
     ;   true.
 
-getPossibleDirection(_, _, _, _, _, 0, _, Total, Moves) :- Total is 0, returnResult(Moves, []).
-getPossibleDirection(Board, Column, Line, HorMove, VertMove, Amount, Affected, Total, Moves) :-
+getPossibleDirection(_, _, _, _, _, 0,_, Total, Moves) :- Total is 0, returnResult(Moves, []).
+getPossibleDirection(Board, Column, Line, HorMove, VertMove, Amount, PieceColor, Total, Moves) :-
     DestCol is Column + (HorMove * Amount),
     DestLin is Line + (VertMove * Amount),
-    boardSize(Size),
-    ((withinBoard(DestCol, DestLin, Size),
-    housesAffected(Board, Column, Line, HorMove, VertMove, Amount, Affected, _, _)) ->
+    NewAmount is Amount-1,
+    (verifyMove(Board,Column,Line, DestCol, DestLin, _,_, PieceColor,_) ->
         Total is Amount,
         listPossible(Column, Line, HorMove, VertMove, Amount, Moves)
-    ;getPossibleDirection(Board, Column, Line, HorMove, VertMove, Amount-1, Affected, Total, Moves)).
+    ;getPossibleDirection(Board, Column, Line, HorMove, VertMove, NewAmount,PieceColor, Total, Moves)).
 
 possibleMoves(Board, Column, Line, Total, Possible) :-
     getPiece(Board, Column, Line, Piece),
     pieceHeight(Piece, Height),
-    getPossibleDirection(Board, Column, Line, -1,  0, Height, Height+1, Total1, Inverted1),
-    getPossibleDirection(Board, Column, Line,  1,  0, Height, Height+1, Total2, Inverted2),
-    getPossibleDirection(Board, Column, Line,  0, -1, Height, Height+1, Total3, Inverted3),
-    getPossibleDirection(Board, Column, Line,  0,  1, Height, Height+1, Total4, Inverted4),
+    pieceColor(Piece, Color),
+    getPossibleDirection(Board, Column, Line, -1,  0, Height, Color, Total1, Inverted1),
+    getPossibleDirection(Board, Column, Line,  1,  0, Height, Color, Total2, Inverted2),
+    getPossibleDirection(Board, Column, Line,  0, -1, Height, Color, Total3, Inverted3),
+    getPossibleDirection(Board, Column, Line,  0,  1, Height, Color, Total4, Inverted4),
     Total is Total1 + Total2 + Total3 + Total4,
-    reverse(Inverted1, [_|Moves1]),
-    reverse(Inverted2, [_|Moves2]),
-    reverse(Inverted3, [_|Moves3]),
-    reverse(Inverted4, [_|Moves4]),
+    (Total1 > 0 -> reverse(Inverted1, [_|Moves1]); returnResult(Moves1,[])),
+    (Total2 > 0 -> reverse(Inverted2, [_|Moves2]); returnResult(Moves2,[])),
+    (Total3 > 0 -> reverse(Inverted3, [_|Moves3]); returnResult(Moves3,[])),
+    (Total4 > 0 -> reverse(Inverted4, [_|Moves4]); returnResult(Moves4,[])),
     append(Moves1, Moves2, SumMoves1),
     append(Moves3, Moves4, SumMoves2),
     append(SumMoves1, SumMoves2, Possible).
@@ -326,10 +322,20 @@ d(X, InC, InL, DeC, DeL) :- boardStart(Z), generateRandomMove(Z, X, InC, InL, De
 generateRandomMove(Board, Side, InC, InL, DeC, DeL) :-
     allPossibleMoves(Board, Side, NumMoves,AllMoves),
     random(0, NumMoves, Option),!,
-    write(NumMoves+Option),nl,
-    write(AllMoves),
-    getListElement(Option, AllMoves, 0, InC-InL-DeC-DeL),
-    write(InC+InL+DeC+DeL), nl.
+    write(Option),
+    getListElement(Option, AllMoves, 0, InC-InL-DeC-DeL).
+
+getComputerMove(Board,Color,HorMove, VertMove, PiecesToMove):-
+    generateRandomMove(Board, Color, InC, InL, DeC, DeL),
+    isOrthogonal(InC, InL, DeC, DeL, HorMove, VertMove, Amount),
+    getPiece(Board, InC, InL, Piece),
+    pieceHeight(Piece, Height),
+    Affected is Height +1,
+    housesAffected(Board, InC, InL, HorMove, VertMove, Amount, Affected, _, Pieces),
+    reverse(Pieces, [_|PiecesToMove]).
+
+we(Y,Z,Pieces) :- boardStart(X), getComputerMove(X, r,Y,Z,Pieces).
+
 
 analyseMove(Board, Player, HorMove, VertMove, PiecesAffected) :-
     askMove(InC, InL, DeC, DeL),
@@ -338,41 +344,53 @@ analyseMove(Board, Player, HorMove, VertMove, PiecesAffected) :-
     convertLetterToIndex(DeC, A, 1, DeColInd),
     verifyMove(Board, InColInd, InL, DeColInd, DeL, HorMove, VertMove,Player, PiecesAffected).
 
-finish(P1Color-P1Points,P1Color-P2Points,[], P1Points, P2Points, Side) :-
-    P2Points >= 7 ->
-        returnResult(P2Color, Side)
-    ;P1Points >=7 ->
-        returnResult(P1Color, Side).
-finish(P1Color-P1Points, P2Color-P2Points, [Removed|Rest], NewP1Points, NewP2Points) :-
+updatePoints(_-P1Points,_-P2Points,[], P1Points, P2Points).
+updatePoints(P1Color-P1Points, P2Color-P2Points, [Removed|Rest], NewP1Points, NewP2Points) :-
     pieceColor(Removed,Color),
     pieceHeight(Removed,Height),
     (Color == P1Color ->
         NewPoints is P1Points+Height,
-        finish(P1Color-NewPoints, P2Color-P2Points, Rest, NewP1Points, NewP2Points)
+        updatePoints(P1Color-NewPoints, P2Color-P2Points, Rest, NewP1Points, NewP2Points)
     ;   NewPoints is P2Points+Height,
-        finish(P1Color-P1Points, P2Color-NewPoints, Rest, NewP1Points, NewP2Points)).
+        updatePoints(P1Color-P1Points, P2Color-NewPoints, Rest, NewP1Points, NewP2Points)).
 
-vsComputer(Board, Player, Computer):-
-    (analyseMove(Board, Player) ->
-        move(InC, InL, DeC, DeL),
-        (finish(Board) ->
-            write('ganhaste parabens ueueueue')
-        ;   generateRandomMove(NewBoard, Computer, ComInC, ComInL, ComDeC, ComDeL),
-            move(ComInC, ComInL, ComDeC, ComDeL),
-            finish(Board) ->
-                write('loser')
-            ;   vsHuman(Board, Player, Computer))
-    ;   vsHuman(Board, Player, Computer)).
+finish(P1Color-P1Points, P2Color-P2Points) :-
+    (P1Points >= 7; P2Points >= 7) ->
+        true
+    ;fail.
 
-vsHuman(Board, Player, OtherPlayer) :-
-    (analyseMove(Board, Player, HorMove, VertMove, PiecesToMove) ->
+vsComputer(Board, P1Color-P1Points,ComColor-ComPoints):-
+    (analyseMove(Board, P1Color, HorMove, VertMove, PiecesToMove) ->
         move(Board, NewBoard, HorMove, VertMove, PiecesToMove, PiecesRemoved),
-        finish(Player, OtherPlayer, Removed) ->
+        updatePoints(P1Color-P1Points,ComColor-ComPoints, PiecesRemoved, NewP1P, NewComP),
+        write('update1'),
+        (finish(P1Color-NewP1P, ComColor-NewComP)->
             displayGameOver
-        ;   vsHuman(Board, OtherPlayer, Player)
-    ;   vsHuman(Board, Player, OtherPlayer)).
+        ;   (getComputerMove(NewBoard, ComColor, ComHor, ComVert, ComPieces),
+            move(NewBoard, AfterBoard, ComHor, ComVert, ComPieces, ComRemoved),
+            updatePoints(P1Color-NewP1P,ComColor-NewComP, ComRemoved, AfterP1P, AfterComP),
+            write('update2'),
+            finish(P1Color-AfterP1P, ComColor-AfterComP) ->
+                displayGameOver
+            ;   vsComputer(Board, P1Color-AfterP1P,ComColor-AfterComP)))
+    ;   vsComputer(Board, P1Color-P1Points,ComColor-ComPoints)).
 
-game(Board) :-
+vsHuman(Board, P1Color-P1Pts,P2Color-P2Pts) :-
+    (analyseMove(Board, P1Color, HorMove, VertMove, PiecesToMove) ->
+        move(Board, NewBoard, HorMove, VertMove, PiecesToMove, PiecesRemoved),
+        updatePoints(P1Color-P1Pts,P2Color-P2Pts, PiecesRemoved, NewP1P, NewP2P),
+        (finish(P1Color-P1Pts, P2Color-P2Pts)->
+            displayGameOver
+        ;(nl,displayBoard(NewBoard, 9,9),
+        vsHuman(NewBoard, P2Color-NewP2P, P1Color-NewP1P)))
+    ;   vsHuman(Board, P1Color-P1Pts,P2Color-P2Pts)).
+
+singlePlayer :-
+    boardSize(Size),
+    setupGame(Board, Size),
+    vsComputer(Board, w-0, r-0).
+
+multiPlayer :-
     boardSize(Size),
     setupGame(Board, Size),
     vsHuman(Board, w-0, r-0).
@@ -380,8 +398,8 @@ game(Board) :-
 oshi :-
     displayMenu,
     navigatingMenu(Choice),
-    (Choice == 1 -> game(X), oshi
-    ;Choice == 2 -> game(X), oshi
+    (Choice == 1 -> singlePlayer, oshi
+    ;Choice == 2 -> multiPlayer, oshi
     ;Choice == 3 -> displayRules, oshi
     ;Choice == 4 -> write('Exiting Oshi. Hope you enjoyed yourself.\n\n')
     ;oshi).

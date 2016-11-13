@@ -110,11 +110,13 @@ askPlayerMove(InC, InL, DeC, DeL) :-
     write('Coordinates of the piece to move (ex: \'d3\'.)'),
     nl,
     read(Input),
-    atom_chars(Input, [InC|[InL|_]]),
+    atom_chars(Input, [InC|InLString]),
+    number_chars(InL, InLString),
     write('Coordinates of the pieces destination (ex: \'f3\'.)'),
     nl,
     read(Dest),
-    atom_chars(Dest, [DeC|[DeL|_]]).
+    atom_chars(Dest, [DeC|DeLString]),
+    number_chars(DeL, DeLString).
 
 askMove(A,B,C,D) :- catch(askPlayerMove(A,B,C,D), _, askMove(A,B,C,D)).
 
@@ -125,7 +127,7 @@ navigatingMenu(Choice) :-
     ;navigatingMenu(Choice).
 
 displayGameOver :-
-    write('Congratulations you have won').
+    write('\nGame over pleasy come again.\n').
 
 displayRules :-
     write('In Oshi the goal is to knock the opponents piece\'s off the board.\n'),
