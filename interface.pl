@@ -106,18 +106,23 @@ end(X, N) :-
     displayBoard(X, N, N).
 
 askMove(InC, InL, DeC, DeL) :-
+    flush_output,
     write('Coordinates of the piece to move (ex: \'d3\'.)'),
     nl,
     read(Input),
-    atom_chars(Input, [InC|[InL|Rest]]),
+    atom_chars(Input, [InC|[InL|_]]),
     write('Coordinates of the pieces destination (ex: \'f3\'.)'),
     nl,
     read(Dest),
-    atom_chars(Dest, [DeC|[DeL|Rest]]).
+    atom_chars(Dest, [DeC|[DeL|_]]).
+
+w(A,B,C,D) :- catch(askMove(A,B,C,D), _, w(A,B,C,D)).
 
 navigatingMenu(Choice) :-
-    read(Choice),
-    integer(Choice).
+    flush_output,
+    catch(read(Input), _, navigatingMenu(Choice)),
+    integer(Input) -> Choice is Input
+    ;navigatingMenu(Choice).
 
 displayRules:-
     write('In Oshi the goal is to knock the opponents piece\'s off the board.\n'),
