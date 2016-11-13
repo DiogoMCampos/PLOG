@@ -42,6 +42,7 @@ letters(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I']).
 
 pieceHeight(piece(_, Height), Height).
 pieceColor(piece(Color, _), Color).
+boardSize(9).
 
 translate(o) :- write(' ').
 translate(piece(w, 3)) :- write('O').
@@ -91,19 +92,20 @@ displayBoard([L|Ls], N, R) :-
     displayLine(L, N, N),
     displayBoard(Ls, N, R1).
 
-setupGame(X, N) :-
-    N < 10,
-    N >= 0,
+setupGame(X) :-
     boardStart(X),
-    displayBoard(X, N, N).
+    boardSize(Size),
+    displayBoard(X, Size,Size).
 
-midGame(X, N) :-
+midGame(X) :-
     boardMidGame(X),
-    displayBoard(X, N, N).
+    boardSize(Size),
+    displayBoard(X, Size, Size).
 
-end(X, N) :-
+end(X) :-
     boardEndGame(X),
-    displayBoard(X, N, N).
+    boardSize(Size),
+    displayBoard(X, Size,Size).
 
 askPlayerMove(InC, InL, DeC, DeL) :-
     flush_output,

@@ -2,7 +2,6 @@
 :-use_module(library(random)).
 :-include('interface.pl').
 
-boardSize(9).
 boardStartIndex(1).
 
 convertLetterToIndex(Column, [X|Xs], Index, Result) :-
@@ -95,14 +94,6 @@ getPiecesCoordinates(Board, Column, Line, Side, [PieceCoords|Locals], PiecesLeft
             ;   getPiecesCoordinates(Board, NewCol, NewLine, Side, [PieceCoords|Locals], PiecesLeft, PiecesTotal))
         ;   getPiecesCoordinates(Board, NewCol, NewLine, Side, [PieceCoords|Locals], PiecesLeft, PiecesTotal))
     ;   returnResult(PiecesLeft, PiecesTotal)).
-
-abc(X) :- boardMidGame(Board), getPiecesCoordinates(Board, 1,1,X,Coords, 0, Pieces), write(Coords),nl,write(Pieces).
-
-a(A,B,Y,Z) :-
-    boardStart(X),
-    housesAffected(X, A, B, Y, Z, 3, 4, InvTotal, [_|Rest]), reverse(Rest, [_|Real]),write(Real),
-    Total is 4 - InvTotal,
-    nl, write(Total).
 
 getFirstValuePair(Value-_, Value).
 getSecondValuePair(_-Value, Value).
@@ -222,30 +213,6 @@ move(Board, NewBoard, HorMove, VertMove, PiecesToMove, PiecesRemoved) :-
         moveVertical(Board, NewBoard, PiecesToMove, VertMove, PiecesRemoved)
     ;   moveHorizontal(Board, NewBoard, PiecesToMove, HorMove, PiecesRemoved).
 
-moveList([5-3-w-2, 5-2-w-2]).
-moveList2([4-8-4, 5-8-4, 6-8-4, 7-8-4]).
-
-test(Removed) :-
-    boardStart(X),
-    moveList(Y),
-    move(X, N, 0, -1, Y, Removed),
-    displayBoard(N, 9, 9).
-
-test1(Removed) :-
-    boardStart(X),
-    moveList2(Y),
-    move(X, N, 1, 0, Y, Removed),
-    displayBoard(N, 9, 9).
-
-moveVerAuxiliar(_,_,_,_,0,_,_).
-moveVerAuxiliar([X|Xs], [N|Ns], InC, InL, CurrLine, DeL, Piece) :-
-    (   CurrLine == InL -> removeFromLine(X, N, InC, 1)
-    ;   CurrLine == DeL -> addToLine(X, N, InC, 1, Piece)
-    ;   returnResult(X, N)),
-    NextLine is CurrLine - 1,
-moveVerAuxiliar(Xs, Ns, InC, InL, NextLine, DeL, Piece).
-
-/* Missing Player and [X|Xs] and board size is currently hardcoded */
 verifyMove(Board,InC, InL, DeC, DeL, HorMove, VertMove, Player, PiecesAffected) :-
     boardSize(Size),
     withinBoard(InC, InL, Size),
@@ -261,8 +228,6 @@ verifyMove(Board,InC, InL, DeC, DeL, HorMove, VertMove, Player, PiecesAffected) 
     TotalAffected is Height + 1 -InverseTotal,
     (TotalAffected == 1 -> true
     ;pushOpponents(PiecesAffected, Player)).
-
-ab(X,Y,X1,Y1, Side) :- boardMidGame(Board), verifyMove(Board, X,Y,X1,Y1, Side,A,B), write(A),nl,write(B).
 
 listPossible(Column, Line, HorMove, VertMove, Amount, [Move|Rest]) :-
     Amount > 0 ->
@@ -314,11 +279,6 @@ allPossibleMoves(Board, Side, Total, Moves) :-
     reverse(Over, [_|Coords]),
     listAllMoves(Board, Coords, 0, Total, [], Moves).
 
-a(X,Y) :- boardStart(Z), possibleMoves(Z, X, Y, Total, Moves), write(Total), nl, write(Moves).
-b(X,Y) :- boardStart(Z), getPossibleDirection(Z, X, Y, -1, 0, 3,4,Total, Moves), write(Total), nl, write(Moves).
-c(X) :- boardStart(Z), allPossibleMoves(Z, r, X,Y), write(Y).
-d(X, InC, InL, DeC, DeL) :- boardStart(Z), generateRandomMove(Z, X, InC, InL, DeC, DeL).
-
 generateRandomMove(Board, Side, InC, InL, DeC, DeL) :-
     allPossibleMoves(Board, Side, NumMoves,AllMoves),
     random(0, NumMoves, Option),!,
@@ -332,9 +292,6 @@ getComputerMove(Board,Color,HorMove, VertMove, PiecesToMove):-
     Affected is Height +1,
     housesAffected(Board, InC, InL, HorMove, VertMove, Amount, Affected, _, Pieces),
     reverse(Pieces, [_|PiecesToMove]).
-
-we(Y,Z,Pieces) :- boardStart(X), getComputerMove(X, r,Y,Z,Pieces).
-
 
 analyseMove(Board, Player, HorMove, VertMove, PiecesAffected) :-
     askMove(InC, InL, DeC, DeL),
@@ -394,20 +351,18 @@ comVScom(Board, P1Color-P1Pts,P2Color-P2Pts) :-
     ;   comVScom(Board, P1Color-P1Pts,P2Color-P2Pts)).
 
 singlePlayer :-
-    boardSize(Size),
-    setupGame(Board, Size),
+    setupGame(Board),
     vsComputer(Board, w-0, r-0).
 
 multiPlayer :-
-    boardSize(Size),
-    setupGame(Board, Size),
+    setupGame(Board),
     vsHuman(Board, w-0, r-0).
 
 noPlayer :-
-    boardSize(Size),
-    setupGame(Board, Size),
+    setupGame(Board),
     comVScom(Board, w-0, r-0).
 
+/* main function */
 oshi :-
     displayMenu,
     navigatingMenu(Choice),
