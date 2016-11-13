@@ -113,64 +113,104 @@ getOutsideBoard([Pair|PairRest], [Removed|RemovedRest]) :-
         getOutsideBoard(PairRest, RemovedRest)
     ;   getOutsideBoard(PairRest, [Removed|RemovedRest]).
 
-createOriginPair(Column-_-Amount, Column-Amount).
+createHorOriginPair(Column-_-Amount, Column-Amount).
+createVerOriginPair(_-Line-Amount, Line-Amount).
 createDestPair(Column-Piece, Column, Piece).
 
-createMovementPairs([],[]).
-createMovementPairs([Move|Rest], [P|Ps]) :-
-    createOriginPair(Move, P),
-    createMovementPairs(Rest, Ps).
+createHorizontalPairs([],[]).
+createHorizontalPairs([Move|Rest], [P|Ps]) :-
+    createHorOriginPair(Move, P),
+    createHorizontalPairs(Rest, Ps).
+
+createVerticalPairs([],[]).
+createVerticalPairs([Move|Rest], [P|Ps]) :-
+    createVerOriginPair(Move, P),
+    createVerticalPairs(Rest, Ps).
+
 
 getMoveLine([_-Line-_|_], Line).
+getMoveColumn([Column-_-_|_], Column).
 
 deletePieces(_, _, _, [], Pieces, Pieces, 0).
-deletePieces(X, CurrC, Direction, [Piece|Rest], Pieces, NewPieces, Deleted) :-
-    getFirstValuePair(Piece, Column),
-    CurrC == Column ->
+deletePieces(X, Comparable, Direction, [Piece|Rest], Pieces, NewPieces, Deleted) :-
+    getFirstValuePair(Piece, Value),
+    Comparable == Value ->
         getSecondValuePair(Piece, Amount),
         (Direction > 0 ->
-            DestC is Column + Amount
-        ;   DestC is Column - Amount),
-        createDestPair(Pair, DestC, X),
+            Dest is Value + Amount
+        ;   Dest is Value - Amount),
+        createDestPair(Pair, Dest, X),
         addToList(Pair, Pieces, NewPieces),
         Deleted is 1
-    ;   deletePieces(X, CurrC, Direction, Rest, Pieces, NewPieces, Deleted).
+    ;   deletePieces(X, Comparable, Direction, Rest, Pieces, NewPieces, Deleted).
 
-addPieces(_, o, _, [], 1).
+addPieces(_, o, Comparable, [], 1).
 addPieces(X, X, _, [], 0).
-addPieces(X, N, CurrC, [Piece|Rest], Deleted) :-
-    getFirstValuePair(Piece, Column),
-    CurrC == Column ->
+addPieces(X, N, Comparable, [Piece|Rest], Deleted) :-
+    getFirstValuePair(Piece, Value),
+    Comparable == Value ->
         getSecondValuePair(Piece, Object),
         N = Object
-    ;   addPieces(X, N, CurrC, Rest, Deleted).
+    ;   addPieces(X, N, Comparable, Rest, Deleted).
 
-moveLine([],_,_,_,_, Pieces, Pieces).
-moveLine([X|Xs], [N|Ns], CurrC, Direction, PiecesToMove, Pieces, Removed) :-
+moveLineHorizontal([],_,_,_,_, Pieces, Pieces).
+moveLineHorizontal([X|Xs], [N|Ns], CurrC, Direction, PiecesToMove, Pieces, Removed) :-
     deletePieces(X, CurrC, Direction, PiecesToMove, Pieces, NewPieces, Deleted),
     addPieces(X, N, CurrC, NewPieces, Deleted),
     (Direction > 0 ->
         NextC is CurrC + 1
     ;   NextC is CurrC - 1),
-    moveLine(Xs, Ns, NextC, Direction, PiecesToMove, NewPieces, Removed).
+    moveLineHorizontal(Xs, Ns, NextC, Direction, PiecesToMove, NewPieces, Removed).
 
 moveHorAuxiliar(_,_,_,_,0,_,_).
 moveHorAuxiliar([X|Xs], [N|Ns], MovePairs, MoveLine, CurrLine, Direction, Removed) :-
     (CurrLine == MoveLine ->
         (Direction > 0 ->
-            moveLine(X, N, 1, Direction, MovePairs, [], Removed)
+            moveLineHorizontal(X, N, 1, Direction, MovePairs, [], Removed)
         ;   reverse(X, TempLine),
-            moveLine(TempLine, TempN, 9, Direction, MovePairs, [], Removed),
+            moveLineHorizontal(TempLine, TempN, 9, Direction, MovePairs, [], Removed),
             reverse(TempN, N))
     ;   returnResult(X, N)),
     NextLine is CurrLine - 1,
     moveHorAuxiliar(Xs, Ns, MovePairs, MoveLine, NextLine, Direction, Removed).
 
-moveHorizontal([X|Xs], [N|Ns], MoveList, Direction, Removed) :-
-    createMovementPairs(MoveList, Pairs),
+moveHorizontal(X, N, MoveList, Direction, Removed) :-
+    createHorizontalPairs(MoveList, Pairs),
     getMoveLine(MoveList, MoveLine),
-    moveHorAuxiliar([X|Xs], [N|Ns], Pairs, MoveLine, 9, Direction, MovedList),
+    moveHorAuxiliar(X, N, Pairs, MoveLine, 9, Direction, MovedList),
     getOutsideBoard(MovedList, Outside), reverse(Outside, [_|Removed]).
+
+moveLineVertical([],_,_,_,_,_,_,Pieces,Pieces,_).
+moveLineVertical([X|Xs], [N|Ns], CurrC, CurrL, MoveColumn, Direction, PiecesToMove, Pieces, NewPieces, Removed) :-
+    (CurrC =\= MoveColumn ->
+        N = X,
+        NextPieces = Pieces
+    ;   deletePieces(X, CurrL, Direction, PiecesToMove, Pieces, NextPieces, Deleted),
+        write('Pieces: '), write(Pieces), write(' - Next Pieces: '), write(NextPieces), nl,
+        addPieces(X, N, CurrL, NextPieces, Deleted)),
+    write('Ainda Next Pieces: '), write(NextPieces), nl,
+    NextC is CurrC + 1,
+    write('XS: '), write(Xs), nl,
+    write(NewPieces), nl, write(NextPieces), nl,
+    moveLineVertical(Xs, Ns, NextC, CurrL, MoveColumn, Direction, PiecesToMove, NextPieces, NewPieces, Removed).
+
+moveVerAuxiliar([],_,_,_,_,_,_,_).
+moveVerAuxiliar([X|Xs], [N|Ns], MovePairs, MoveColumn, CurrLine, Direction, Pieces, Removed) :-
+    write('Current Line: '), write(CurrLine), nl,
+    moveLineVertical(X, N, 1, CurrLine, MoveColumn, Direction, MovePairs, Pieces, NewPieces, Removed),
+    (Direction > 0 ->
+        NextLine is CurrLine + 1
+    ;   NextLine is CurrLine - 1),
+    moveVerAuxiliar(Xs, Ns, MovePairs, MoveColumn, NextLine, Direction, NewPieces, Removed).
+
+moveVertical(X, N, MoveList, Direction, Removed) :-
+    createVerticalPairs(MoveList, Pairs),
+    getMoveColumn(MoveList, MoveColumn),
+    (Direction > 0 ->
+        reverse(X, TempX),
+        moveVerAuxiliar(TempX, TempN, Pairs, MoveColumn, 1, Direction, [], Removed),
+        reverse(TempN, N)
+    ;   moveVerAuxiliar(X, N, Pairs, MoveColumn, 9, Direction, [], Removed)).
 
 test(NewLine, Removed, List) :-
     boardStart(X),
@@ -182,7 +222,7 @@ test(NewLine, Removed, List) :-
     getOutsideBoard(Removed, List),
     displayLine(NewLine, 9, 9).
 
-moveList([5-2-3, 4-2-3, 3-2-3]).
+moveList([5-3-2, 5-2-2]).
 
 test2(Removed) :-
     boardStart(X),
@@ -190,17 +230,11 @@ test2(Removed) :-
     moveHorizontal(X, N, Y, -1, Removed),
     displayBoard(N, 9, 9).
 
-moveVerAuxiliar(_,_,_,_,0,_,_).
-moveVerAuxiliar([X|Xs], [N|Ns], InC, InL, CurrLine, DeL, Piece) :-
-    (   CurrLine == InL -> removeFromLine(X, N, InC, 1)
-    ;   CurrLine == DeL -> addToLine(X, N, InC, 1, Piece)
-    ;   returnResult(X, N)),
-    NextLine is CurrLine - 1,
-moveVerAuxiliar(Xs, Ns, InC, InL, NextLine, DeL, Piece).
-
-moveVertical([X|Xs], [N|Ns], InC, InL, DeL) :-
-    getPiece([X|Xs], InC, InL, Piece),
-    moveVerAuxiliar([X|Xs], [N|Ns], InC, InL, 9, DeL, Piece).
+test3(Removed) :-
+    boardStart(X),
+    moveList(Y),
+    moveVertical(X, N, Y, -1, Removed),
+    displayBoard(N, 9, 9).
 
 /* Missing Player and [X|Xs] and board size is currently hardcoded */
 verifyMove(Board,InC, InL, DeC, DeL, Player, TotalAffected, PiecesAffected) :-
