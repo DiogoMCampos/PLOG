@@ -109,9 +109,6 @@ moveLine([X|Xs], [N|Ns], InC, DeC, CurrC, Piece) :-
     NextC is CurrC + 1,
     moveLine(Xs, Ns, InC, DeC, NextC, Piece).
 
-%copyLine([], []).
-%copyLine([O|Os], [O|Ns]) :- copyLine(Os, Ns).
-
 moveHorAuxiliar(_,_,_,_,0,_,_).
 moveHorAuxiliar([X|Xs], [N|Ns], InC, InL, CurrLine, DeC, Piece) :-
     (CurrLine == InL ->
@@ -164,6 +161,45 @@ verifyMove(Board,InC, InL, DeC, DeL, Player, TotalAffected, PiecesAffected) :-
 
 %move([X|Xs], InC, InL, DeC, DeL).
 %finish(X).
+
+
+listPossible(Column, Line, HorMove, VertMove, Amount, [Move|Rest]) :-
+    Amount > 0 ->
+        NewAmount is Amount-1,
+        DestCol is Column + HorMove * Amount,
+        DestLin is Line + VertMove * Amount,
+        returnResult(Column-Line-DestCol-DestLin, Move),
+        listPossible(Column, Line, HorMove, VertMove, NewAmount, Rest)
+    ;   write('').
+
+getPossibleDirection(_, _, _, _, _, 0, _, Total, Moves) :- Total is 0, returnResult(Moves, []).
+getPossibleDirection(Board, Column, Line, HorMove, VertMove, Amount, Affected, Total, Moves) :-
+    DestCol is Column + (HorMove * Amount),
+    DestLin is Line + (VertMove * Amount),
+    ((withinBoard(DestCol, DestLin, 9),
+    housesAffected(Board, Column, Line, HorMove, VertMove, Amount, Affected, _, _)) ->
+        Total is Amount,
+        listPossible(Column, Line, HorMove, VertMove, Amount, Moves)
+    ;getPossibleDirection(Board, Column, Line, HorMove, VertMove, Amount-1, Affected, Total, Moves)).
+
+possibleMoves(Board, Column, Line, Total, Possible) :-
+    getPiece(Board, Column, Line, Piece),
+    pieceHeight(Piece, Height),
+    getPossibleDirection(Board, Column, Line, -1,  0, Height, Height+1, Total1, Inverted1),
+    getPossibleDirection(Board, Column, Line,  1,  0, Height, Height+1, Total2, Inverted2),
+    getPossibleDirection(Board, Column, Line,  0, -1, Height, Height+1, Total3, Inverted3),
+    getPossibleDirection(Board, Column, Line,  0,  1, Height, Height+1, Total4, Inverted4),
+    Total is Total1 + Total2 + Total3 + Total4,
+    reverse(Inverted1, [_|Moves1]),
+    reverse(Inverted2, [_|Moves2]),
+    reverse(Inverted3, [_|Moves3]),
+    reverse(Inverted4, [_|Moves4]),
+    append(Moves1, Moves2, SumMoves1),
+    append(Moves3, Moves4, SumMoves2),
+    append(SumMoves1, SumMoves2, Possible).
+
+a(X,Y) :- boardStart(Z), possibleMoves(Z, X, Y, Total, Moves), write(Total), nl, write(Moves).
+b(X,Y) :- boardStart(Z), getPossibleDirection(Z, X, Y, -1, 0, 3,4,Total, Moves), write(Total), nl, write(Moves).
 
 analyseMove(Board, Player) :-
     askMove(InC, InL, DeC, DeL),
