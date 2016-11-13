@@ -322,7 +322,6 @@ d(X, InC, InL, DeC, DeL) :- boardStart(Z), generateRandomMove(Z, X, InC, InL, De
 generateRandomMove(Board, Side, InC, InL, DeC, DeL) :-
     allPossibleMoves(Board, Side, NumMoves,AllMoves),
     random(0, NumMoves, Option),!,
-    write(Option),
     getListElement(Option, AllMoves, 0, InC-InL-DeC-DeL).
 
 getComputerMove(Board,Color,HorMove, VertMove, PiecesToMove):-
@@ -363,16 +362,15 @@ vsComputer(Board, P1Color-P1Points,ComColor-ComPoints):-
     (analyseMove(Board, P1Color, HorMove, VertMove, PiecesToMove) ->
         move(Board, NewBoard, HorMove, VertMove, PiecesToMove, PiecesRemoved),
         updatePoints(P1Color-P1Points,ComColor-ComPoints, PiecesRemoved, NewP1P, NewComP),
-        write('update1'),
         (finish(P1Color-NewP1P, ComColor-NewComP)->
             displayGameOver
         ;   (getComputerMove(NewBoard, ComColor, ComHor, ComVert, ComPieces),
             move(NewBoard, AfterBoard, ComHor, ComVert, ComPieces, ComRemoved),
             updatePoints(P1Color-NewP1P,ComColor-NewComP, ComRemoved, AfterP1P, AfterComP),
-            write('update2'),
-            finish(P1Color-AfterP1P, ComColor-AfterComP) ->
+            (finish(P1Color-AfterP1P, ComColor-AfterComP) ->
                 displayGameOver
-            ;   vsComputer(Board, P1Color-AfterP1P,ComColor-AfterComP)))
+            ;   displayBoard(AfterBoard, 9,9),
+                vsComputer(AfterBoard, P1Color-AfterP1P,ComColor-AfterComP))))
     ;   vsComputer(Board, P1Color-P1Points,ComColor-ComPoints)).
 
 vsHuman(Board, P1Color-P1Pts,P2Color-P2Pts) :-
