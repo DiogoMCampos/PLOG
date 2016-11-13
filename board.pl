@@ -1,4 +1,5 @@
 :-use_module(library(lists)).
+:-use_module(library(random)).
 :-include('interface.pl').
 
 convertLetterToIndex(Column, [X|Xs], Index, Result) :-
@@ -88,9 +89,9 @@ getPiecesCoordinates(Board, Column, Line, Side, [PieceCoords|Locals], PiecesLeft
                 pieceHeight(Piece,Height),
                 returnResult(PieceCoords, Column-Line-Height),
                 NewPiecesLeft is PiecesLeft + 1,
-                getPiecesCoordinates(Board, NewCol, NewLine, Side, Locals, NewPiecesLeft, PiecesTotal),!
-            ;   getPiecesCoordinates(Board, NewCol, NewLine, Side, [PieceCoords|Locals], PiecesLeft, PiecesTotal),!)
-        ;   getPiecesCoordinates(Board, NewCol, NewLine, Side, [PieceCoords|Locals], PiecesLeft, PiecesTotal),!)
+                getPiecesCoordinates(Board, NewCol, NewLine, Side, Locals, NewPiecesLeft, PiecesTotal)
+            ;   getPiecesCoordinates(Board, NewCol, NewLine, Side, [PieceCoords|Locals], PiecesLeft, PiecesTotal))
+        ;   getPiecesCoordinates(Board, NewCol, NewLine, Side, [PieceCoords|Locals], PiecesLeft, PiecesTotal))
     ;   returnResult(PiecesLeft, PiecesTotal)).
 
 abc(X) :- boardMidGame(Board), getPiecesCoordinates(Board, 1,1,X,Coords, 0, Pieces), write(Coords),nl,write(Pieces).
@@ -198,8 +199,32 @@ possibleMoves(Board, Column, Line, Total, Possible) :-
     append(Moves3, Moves4, SumMoves2),
     append(SumMoves1, SumMoves2, Possible).
 
+listAllMoves(_, [], TotalMoves, TotalMoves, Moves, Moves).
+listAllMoves(Board, [Column-Line-_|Rest], NumTotal, TotalMoves, Moves, AllMoves) :-
+    possibleMoves(Board, Column, Line, NumPossible, Possible),
+    (NumPossible > 0 ->
+        NewTotal is NumTotal + NumPossible,
+        append(Moves, Possible, NewMoves),
+        listAllMoves(Board, Rest, NewTotal, TotalMoves, NewMoves, AllMoves)
+    ;   listAllMoves(Board, Rest, NumTotal, TotalMoves, NewMoves, AllMoves)).
+
+allPossibleMoves(Board, Side, Total, Moves) :-
+    getPiecesCoordinates(Board, 1, 1, Side, Over, 0, _),
+    reverse(Over, [_|Coords]),
+    listAllMoves(Board, Coords, 0, Total, [], Moves).
+
 a(X,Y) :- boardStart(Z), possibleMoves(Z, X, Y, Total, Moves), write(Total), nl, write(Moves).
 b(X,Y) :- boardStart(Z), getPossibleDirection(Z, X, Y, -1, 0, 3,4,Total, Moves), write(Total), nl, write(Moves).
+c(X) :- boardStart(Z), allPossibleMoves(Z, r, X,Y), write(Y).
+d(X, InC, InL, DeC, DeL) :- boardStart(Z), generateRandomMove(Z, X, InC, InL, DeC, DeL).
+
+generateRandomMove(Board, Side, InC, InL, DeC, DeL) :-
+    allPossibleMoves(Board, Side, NumMoves,AllMoves),
+    random(0, NumMoves, Option),
+    write(NumMoves+Option),nl,!,
+    write(AllMoves),
+    getListElement(Option, AllMoves, 0, InC-InL-DeC-DeL),
+    write(InC+InL+DeC+DeL), nl.
 
 analyseMove(Board, Player) :-
     askMove(InC, InL, DeC, DeL),
@@ -208,21 +233,19 @@ analyseMove(Board, Player) :-
     convertLetterToIndex(DeC, A, 1, DeColInd),
     verifyMove(Board, InColInd, InL, DeColInd, DeL, Player, TotalAffected, PiecesAffected).
 
-%analyseMove([X|Xs], Player) :-
-%    askMove([X|Xs], InC, InL, DeC, DeL),
-%    verifyMove([X|Xs], InC, InL, DeC, DeL, P).
+vsComputer(Board, Player, Computer).
 
-play(X, Player, OtherPlayer) :-
-    (analyseMove(X, Player) ->
+vsHuman(Board, Player, OtherPlayer) :-
+    (analyseMove(Board, Player) ->
         move(InC, InL, DeC, DeL),
-        finish(X) ->
+        finish(Board) ->
             write('acabou')
-        ;   play(X, OtherPlayer, Player)
-    ;   play(X, OtherPlayer, Player)).
+        ;   vsHuman(Board, OtherPlayer, Player)
+    ;   vsHuman(Board, OtherPlayer, Player)).
 
-game(X) :-
-    setupGame(X, 9),
-    play(X, w, r).
+game(Board) :-
+    setupGame(Board, 9),
+    vsHuman(Board, w, r).
 
 oshi :-
     displayMenu,

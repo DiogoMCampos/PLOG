@@ -105,7 +105,7 @@ end(X, N) :-
     boardEndGame(X),
     displayBoard(X, N, N).
 
-askMove(InC, InL, DeC, DeL) :-
+askPlayerMove(InC, InL, DeC, DeL) :-
     flush_output,
     write('Coordinates of the piece to move (ex: \'d3\'.)'),
     nl,
@@ -116,7 +116,7 @@ askMove(InC, InL, DeC, DeL) :-
     read(Dest),
     atom_chars(Dest, [DeC|[DeL|_]]).
 
-w(A,B,C,D) :- catch(askMove(A,B,C,D), _, w(A,B,C,D)).
+askMove(A,B,C,D) :- catch(askPlayerMove(A,B,C,D), _, askMove(A,B,C,D)).
 
 navigatingMenu(Choice) :-
     flush_output,
