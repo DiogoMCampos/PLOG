@@ -377,7 +377,7 @@ vsHuman(Board, P1Color-P1Pts,P2Color-P2Pts) :-
     (analyseMove(Board, P1Color, HorMove, VertMove, PiecesToMove) ->
         move(Board, NewBoard, HorMove, VertMove, PiecesToMove, PiecesRemoved),
         updatePoints(P1Color-P1Pts,P2Color-P2Pts, PiecesRemoved, NewP1P, NewP2P),
-        (finish(P1Color-P1Pts, P2Color-P2Pts)->
+        (finish(P1Color-NewP1P, P2Color-NewP2P)->
             displayGameOver
         ;(nl,displayBoard(NewBoard, 9,9),
         vsHuman(NewBoard, P2Color-NewP2P, P1Color-NewP1P)))
