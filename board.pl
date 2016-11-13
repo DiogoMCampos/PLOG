@@ -112,11 +112,15 @@ addToList(Element, List, [Element|List]).
 getOutsideBoard([], _).
 getOutsideBoard([Pair|PairRest], [Removed|RemovedRest]) :-
     getFirstValuePair(Pair, Place),
-    Place > 9 ->
+    (Place > 9 ->
         getSecondValuePair(Pair, Piece),
         Removed = Piece,
         getOutsideBoard(PairRest, RemovedRest)
-    ;   getOutsideBoard(PairRest, [Removed|RemovedRest]).
+    ;   (Place < 1 ->
+            getSecondValuePair(Pair, Piece),
+            Removed = Piece,
+            getOutsideBoard(PairRest, RemovedRest)))
+    ;  getOutsideBoard(PairRest, [Removed|RemovedRest]).
 
 createOriginPair(Column-_-Amount, Column-Amount).
 createDestPair(Column-Piece, Column, Piece).
@@ -177,12 +181,52 @@ moveHorizontal([X|Xs], [N|Ns], MoveList, Direction, Removed) :-
     moveHorAuxiliar([X|Xs], [N|Ns], Pairs, MoveLine, 9, Direction, MovedList),
     getOutsideBoard(MovedList, Outside), reverse(Outside, [_|Removed]).
 
-moveList([5-2-3, 4-2-3, 3-2-3]).
+moveLineVertical([],_,_,_,_,_,_,Pieces,Pieces).
+moveLineVertical([X|Xs], [N|Ns], CurrC, CurrL, MoveColumn, Direction, PiecesToMove, Pieces, NewPieces) :-
+    (CurrC =\= MoveColumn ->
+        N = X,
+        NextPieces = Pieces
+    ;   deletePieces(X, CurrL, Direction, PiecesToMove, Pieces, NextPieces, Deleted),
+        addPieces(X, N, CurrL, NextPieces, Deleted)),
+    NextC is CurrC + 1,
+    moveLineVertical(Xs, Ns, NextC, CurrL, MoveColumn, Direction, PiecesToMove, NextPieces, NewPieces).
+
+moveVerAuxiliar([],_,_,_,_,_,Pieces, Pieces).
+moveVerAuxiliar([X|Xs], [N|Ns], MovePairs, MoveColumn, CurrLine, Direction, Pieces, Removed) :-
+    moveLineVertical(X, N, 1, CurrLine, MoveColumn, Direction, MovePairs, Pieces, NewPieces),
+    (Direction > 0 ->
+        NextLine is CurrLine + 1
+    ;   NextLine is CurrLine - 1),
+    moveVerAuxiliar(Xs, Ns, MovePairs, MoveColumn, NextLine, Direction, NewPieces, Removed).
+
+moveVertical(X, N, MoveList, Direction, Removed) :-
+    createVerticalPairs(MoveList, Pairs),
+    getMoveColumn(MoveList, MoveColumn),
+    (Direction > 0 ->
+        reverse(X, TempX),
+        moveVerAuxiliar(TempX, TempN, Pairs, MoveColumn, 1, Direction, [], MovedList),
+        reverse(TempN, N),
+        getOutsideBoard(MovedList, Outside), reverse(Outside, [_|Removed])
+    ;   moveVerAuxiliar(X, N, Pairs, MoveColumn, 9, Direction, [], MovedList)),
+        getOutsideBoard(MovedList, Outside), reverse(Outside, [_|Removed]).
+
+test(NewLine, Removed, List) :-
+    boardStart(X),
+    moveList(Y),
+    getListElement(2, X, 1, Line),
+    createMovementPairs(Y, Pairs),
+    ToAdd= [],
+    moveLine(Line, NewLine, 1, Pairs, ToAdd, Removed),
+    getOutsideBoard(Removed, List),
+    displayLine(NewLine, 9, 9).
+
+moveList([5-3-2, 5-2-2]).
+moveList2([5-8-3, 6-8-3, 7-8-3]).
 
 test2(Removed) :-
     boardStart(X),
-    moveList(Y),
-    moveHorizontal(X, N, Y, -1, Removed),
+    moveList2(Y),
+    moveHorizontal(X, N, Y, 1, Removed),
     displayBoard(N, 9, 9).
 
 moveVerAuxiliar(_,_,_,_,0,_,_).
