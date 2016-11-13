@@ -37,8 +37,8 @@ returnResult(Result, Result).
 getListElement(Index, [X|Xs], Iterator, Result) :-
     Index =\= Iterator ->
         NewIterator is Iterator+1,
-        getListElement(Index, Xs, NewIterator, Result);
-    returnResult(X,Result).
+        getListElement(Index, Xs, NewIterator, Result)
+    ;   returnResult(X,Result).
 
 isPiece(piece(_,_)).
 
@@ -47,26 +47,23 @@ getPiece([X|Xs], ColumnIndex, LineIndex, Piece) :-
     getListElement(ColumnIndex, Line, 1, Piece),
     isPiece(Piece).
 
-newHorizontalCoord(Column, HorMove, NewColumn) :-
-    (HorMove > 0 -> NewColumn is Column+1);
-    (HorMove < 0 -> NewColumn is Column-1);
-    (HorMove == 0 ->NewColumn is Column).
-
-newVerticalCoord(Line, VertMove, NewLine) :-
-    (VertMove > 0 -> NewLine is Line+1);
-    (VertMove < 0 -> NewLine is Line-1);
-    (VertMove == 0 ->NewLine is Line).
+pushOpponents([], _) :- fail.
+pushOpponents([_-_-Color-_|Rest],  Player) :-
+    (Color \== Player ->
+        true
+    ; pushOpponents(Rest, Player)).
 
 housesAffected(_, _, _, _, _, 0, Affected, Affected, _).
 housesAffected([X|Xs], Column, Line, HorMove, VertMove, Amount, Affected, Total, [Pieces|Rest]) :-
     withinBoard(Column, Line, 9) ->
-        newHorizontalCoord(Column, HorMove, NewColumn),
-        newVerticalCoord(Line, VertMove, NewLine),
-        (getPiece([X|Xs], Column, Line, _) ->
+        NewColumn is Column + HorMove * Amount,
+        NewLine is Line + VertMove * Amount,
+        (getPiece([X|Xs], Column, Line, Object) ->
             ((Affected - 1) >= 0 ->
                 NewAffected is Affected - 1,
                 NewAmount is Amount,
-                returnResult(Pieces, Column-Line-Amount),
+                pieceColor(Object, Color),
+                returnResult(Pieces, Column-Line-Color-Amount),
                 housesAffected([X|Xs], NewColumn, NewLine, HorMove, VertMove, NewAmount, NewAffected, Total, Rest)
             ;!,fail)
         ;   NewAmount is Amount - 1,
@@ -158,8 +155,11 @@ verifyMove(Board,InC, InL, DeC, DeL, Player, TotalAffected, PiecesAffected) :-
     Color == Player,
     pieceHeight(Piece, Height),
     housesAffected(Board, InC, InL, HorMove, VertMove, Amount, Height + 1, InverseTotal, PiecesAffected),
+    reverse(PiecesAffected, [_|InvertedAffected]),!,
+    pushOpponents(InvertedAffected, Player),
     TotalAffected is Height + 1 -InverseTotal.
 
+ab(X,Y,X1,Y1) :- boardMidGame(Board), verifyMove(Board, X,Y,X1,Y1, r,_,_).
 %move([X|Xs], InC, InL, DeC, DeL).
 %finish(X).
 
@@ -233,15 +233,25 @@ analyseMove(Board, Player) :-
     convertLetterToIndex(DeC, A, 1, DeColInd),
     verifyMove(Board, InColInd, InL, DeColInd, DeL, Player, TotalAffected, PiecesAffected).
 
-vsComputer(Board, Player, Computer).
+vsComputer(Board, Player, Computer):-
+    (analyseMove(Board, Player) ->
+        move(InC, InL, DeC, DeL),
+        (finish(Board) ->
+            write('ganhaste parabens ueueueue')
+        ;   generateRandomMove(NewBoard, Computer, ComInC, ComInL, ComDeC, ComDeL),
+            move(ComInC, ComInL, ComDeC, ComDeL),
+            finish(Board) ->
+                write('loser')
+            ;   vsHuman(Board, Player, Computer))
+    ;   vsHuman(Board, Player, Computer)).
 
 vsHuman(Board, Player, OtherPlayer) :-
     (analyseMove(Board, Player) ->
         move(InC, InL, DeC, DeL),
         finish(Board) ->
-            write('acabou')
+            displayGameOver
         ;   vsHuman(Board, OtherPlayer, Player)
-    ;   vsHuman(Board, OtherPlayer, Player)).
+    ;   vsHuman(Board, Player, OtherPlayer)).
 
 game(Board) :-
     setupGame(Board, 9),

@@ -124,7 +124,10 @@ navigatingMenu(Choice) :-
     integer(Input) -> Choice is Input
     ;navigatingMenu(Choice).
 
-displayRules:-
+displayGameOver :-
+    write('Congratulations you have won').
+
+displayRules :-
     write('In Oshi the goal is to knock the opponents piece\'s off the board.\n'),
     write('The first player to take out 7 points worth of pieces wins.\n'),
     write('Each piece\'s points corresponds to the number of floors it contains.\n'),
@@ -137,7 +140,7 @@ displayRules:-
     write('Each piece can push a number of other pieces equal to its number of floors.\n'),
     write('\n').
 
-displayMenu:-
+displayMenu :-
     write('\nWelcome to Oshi'), nl,
     write('Please select one of the options from 1 to 4'),nl,nl,
     write('1. VS Computer          2. VS Player         3. Rules            4. Exit\n\n').
