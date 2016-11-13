@@ -22,17 +22,17 @@ isOrthogonal(InC, InL, DeC, DeL, HorMove, VertMove, Amount) :-
         (InL > DeL ->
             Amount is InL - DeL,
             VertMove is -1
-        ;InL < DeL ->
-            Amount is DeL - InL,
-            VertMove is 1))
-    ;(InL == DeL ->
+        ;   InL < DeL ->
+                Amount is DeL - InL,
+                VertMove is 1))
+    ;   (InL == DeL ->
         VertMove is 0,
         (InC > DeC ->
             Amount is InC - DeC,
             HorMove is -1
-        ;InC < DeC ->
-            Amount is DeC - InC,
-            HorMove is 1)).
+        ;   InC < DeC ->
+                Amount is DeC - InC,
+                HorMove is 1)).
 
 returnResult(Result, Result).
 
@@ -53,7 +53,7 @@ pushOpponents([], _) :- fail.
 pushOpponents([_-_-Color-_|Rest],  Player) :-
     (Color \== Player ->
         true
-    ; pushOpponents(Rest, Player)).
+    ;   pushOpponents(Rest, Player)).
 
 housesAffected(_, _, _, _, _, 0, Affected, Affected, _).
 housesAffected([X|Xs], Column, Line, HorMove, VertMove, Amount, Affected, Total, [Pieces|Rest]) :-
@@ -68,7 +68,7 @@ housesAffected([X|Xs], Column, Line, HorMove, VertMove, Amount, Affected, Total,
                 pieceColor(Object, Color),
                 returnResult(Pieces, Column-Line-Color-Amount),
                 housesAffected([X|Xs], NewColumn, NewLine, HorMove, VertMove, NewAmount, NewAffected, Total, Rest)
-            ;!,fail)
+            ;   !, fail)
         ;   NewAmount is Amount - 1,
             NewAffected is Affected,
             housesAffected([X|Xs], NewColumn, NewLine, HorMove, VertMove, NewAmount, NewAffected, Total, [Pieces|Rest]))
@@ -82,7 +82,6 @@ getPiecesCoordinates(Board, Column, Line, Side, [PieceCoords|Locals], PiecesLeft
         NewLine is Line + 1
     ;   NewCol is Column + 1,
         NewLine is Line),
-
     (Line =< Size ->
         (getPiece(Board, Column, Line, Piece) ->
             pieceColor(Piece, Color),
@@ -226,8 +225,9 @@ verifyMove(Board,InC, InL, DeC, DeL, HorMove, VertMove, Player, PiecesAffected) 
     housesAffected(Board, InC, InL, HorMove, VertMove, Amount, Height + 1, InverseTotal, InvertedAffected),
     reverse(InvertedAffected, [_|PiecesAffected]),!,
     TotalAffected is Height + 1 -InverseTotal,
-    (TotalAffected == 1 -> true
-    ;pushOpponents(PiecesAffected, Player)).
+    (TotalAffected == 1 ->
+        true
+    ;   pushOpponents(PiecesAffected, Player)).
 
 listPossible(Column, Line, HorMove, VertMove, Amount, [Move|Rest]) :-
     Amount > 0 ->
@@ -246,7 +246,7 @@ getPossibleDirection(Board, Column, Line, HorMove, VertMove, Amount, PieceColor,
     (verifyMove(Board,Column,Line, DestCol, DestLin, _,_, PieceColor,_) ->
         Total is Amount,
         listPossible(Column, Line, HorMove, VertMove, Amount, Moves)
-    ;getPossibleDirection(Board, Column, Line, HorMove, VertMove, NewAmount,PieceColor, Total, Moves)).
+    ;   getPossibleDirection(Board, Column, Line, HorMove, VertMove, NewAmount,PieceColor, Total, Moves)).
 
 possibleMoves(Board, Column, Line, Total, Possible) :-
     getPiece(Board, Column, Line, Piece),
@@ -257,10 +257,18 @@ possibleMoves(Board, Column, Line, Total, Possible) :-
     getPossibleDirection(Board, Column, Line,  0, -1, Height, Color, Total3, Inverted3),
     getPossibleDirection(Board, Column, Line,  0,  1, Height, Color, Total4, Inverted4),
     Total is Total1 + Total2 + Total3 + Total4,
-    (Total1 > 0 -> reverse(Inverted1, [_|Moves1]); returnResult(Moves1,[])),
-    (Total2 > 0 -> reverse(Inverted2, [_|Moves2]); returnResult(Moves2,[])),
-    (Total3 > 0 -> reverse(Inverted3, [_|Moves3]); returnResult(Moves3,[])),
-    (Total4 > 0 -> reverse(Inverted4, [_|Moves4]); returnResult(Moves4,[])),
+    (Total1 > 0 ->
+        reverse(Inverted1, [_|Moves1])
+    ;   returnResult(Moves1,[])),
+    (Total2 > 0 ->
+        reverse(Inverted2, [_|Moves2])
+    ;   returnResult(Moves2,[])),
+    (Total3 > 0 ->
+        reverse(Inverted3, [_|Moves3])
+    ;   returnResult(Moves3,[])),
+    (Total4 > 0 ->
+        reverse(Inverted4, [_|Moves4])
+    ;   returnResult(Moves4,[])),
     append(Moves1, Moves2, SumMoves1),
     append(Moves3, Moves4, SumMoves2),
     append(SumMoves1, SumMoves2, Possible).
