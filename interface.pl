@@ -144,5 +144,5 @@ displayRules :-
 
 displayMenu :-
     write('\nWelcome to Oshi'), nl,
-    write('Please select one of the options from 1 to 4'),nl,nl,
-    write('1. VS Computer          2. VS Player         3. Rules            4. Exit\n\n').
+    write('Please select one of the options from 1 to 4'),nl,
+    write('1. VS Computer          2. VS Player         3. Com VS Com           4. Rules            5. Exit\n\n').

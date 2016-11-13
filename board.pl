@@ -152,7 +152,7 @@ deletePieces(X, Comparable, Direction, [Piece|Rest], Pieces, NewPieces, Deleted)
         Deleted is 1
     ;   deletePieces(X, Comparable, Direction, Rest, Pieces, NewPieces, Deleted).
 
-addPieces(_, o, Comparable, [], 1).
+addPieces(_, o, _, [], 1).
 addPieces(X, X, _, [], 0).
 addPieces(X, N, Comparable, [Piece|Rest], Deleted) :-
     getFirstValuePair(Piece, Value),
@@ -353,7 +353,7 @@ updatePoints(P1Color-P1Points, P2Color-P2Points, [Removed|Rest], NewP1Points, Ne
     ;   NewPoints is P2Points+Height,
         updatePoints(P1Color-P1Points, P2Color-NewPoints, Rest, NewP1Points, NewP2Points)).
 
-finish(P1Color-P1Points, P2Color-P2Points) :-
+finish(_-P1Points, _-P2Points) :-
     (P1Points >= 7; P2Points >= 7) ->
         true
     ;fail.
@@ -383,6 +383,16 @@ vsHuman(Board, P1Color-P1Pts,P2Color-P2Pts) :-
         vsHuman(NewBoard, P2Color-NewP2P, P1Color-NewP1P)))
     ;   vsHuman(Board, P1Color-P1Pts,P2Color-P2Pts)).
 
+comVScom(Board, P1Color-P1Pts,P2Color-P2Pts) :-
+    (getComputerMove(Board, P1Color, HorMove, VertMove, PiecesToMove) ->
+        move(Board, NewBoard, HorMove, VertMove, PiecesToMove, PiecesRemoved),
+        updatePoints(P1Color-P1Pts,P2Color-P2Pts, PiecesRemoved, NewP1P, NewP2P),
+        nl,displayBoard(NewBoard, 9,9),
+        (finish(P1Color-NewP1P, P2Color-NewP2P)->
+            displayGameOver
+        ;comVScom(NewBoard, P2Color-NewP2P, P1Color-NewP1P))
+    ;   comVScom(Board, P1Color-P1Pts,P2Color-P2Pts)).
+
 singlePlayer :-
     boardSize(Size),
     setupGame(Board, Size),
@@ -393,11 +403,17 @@ multiPlayer :-
     setupGame(Board, Size),
     vsHuman(Board, w-0, r-0).
 
+noPlayer :-
+    boardSize(Size),
+    setupGame(Board, Size),
+    comVScom(Board, w-0, r-0).
+
 oshi :-
     displayMenu,
     navigatingMenu(Choice),
     (Choice == 1 -> singlePlayer, oshi
     ;Choice == 2 -> multiPlayer, oshi
-    ;Choice == 3 -> displayRules, oshi
-    ;Choice == 4 -> write('Exiting Oshi. Hope you enjoyed yourself.\n\n')
+    ;Choice == 3 -> noPlayer, oshi
+    ;Choice == 4 -> displayRules, oshi
+    ;Choice == 5 -> write('Exiting Oshi. Hope you enjoyed yourself.\n\n')
     ;oshi).
